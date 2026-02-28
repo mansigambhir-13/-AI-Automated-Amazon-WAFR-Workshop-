@@ -11,10 +11,10 @@ See: .planning/PROJECT.md (updated 2026-02-27)
 
 Phase: 1 of 5 (Infrastructure Foundation)
 Plan: 1 of 3 in current phase
-**Current Plan:** 2
+**Current Plan:** 3
 **Total Plans in Phase:** 3
 Status: Ready to execute
-Last activity: 2026-02-28 — Completed 01-02 (Cognito User Pool, App Client, and RBAC groups)
+Last activity: 2026-02-28 — Completed 01-03 (IAM policy extended, Cognito secrets in Secrets Manager, both App Runner services updated with env vars)
 
 Progress: [█░░░░░░░░░] 7%
 
@@ -37,6 +37,7 @@ Progress: [█░░░░░░░░░] 7%
 
 *Updated after each plan completion*
 | Phase 01-infrastructure-foundation P02 | 2 | 2 tasks | 2 files |
+| Phase 01-infrastructure-foundation P01-03 | 10 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -56,6 +57,10 @@ Recent decisions affecting current work:
 - [Phase 01-02]: No client secret on App Client — public client required for Amplify frontend (browser cannot store secrets securely)
 - [Phase 01-02]: ALLOW_USER_SRP_AUTH only — excludes ALLOW_USER_PASSWORD_AUTH to prevent plaintext password transmission (Pitfall 5 from research)
 - [Phase 01-02]: 1-hour access token validity — short-lived tokens reduce blast radius if compromised
+- [Phase 01-03]: Separate secrets per Cognito value — App Runner RuntimeEnvironmentSecrets maps one secret ARN to one env var; combined JSON would require application-side parsing
+- [Phase 01-03]: WafrAppRunnerInstanceRole attached to frontend App Runner — required when using RuntimeEnvironmentSecrets; uses same role as backend for consistency
+- [Phase 01-03]: wafr-cognito-* wildcard in IAM SecretsManagerCognitoRead — Secrets Manager appends random 6-char suffix; wildcard covers current and future rotated secrets
+- [Phase 01-03]: AUTH_REQUIRED=true set immediately on both services — per locked roadmap decision to enable auth enforcement before Phase 3 backend middleware lands
 
 ### Pending Todos
 
@@ -70,5 +75,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-28
-Stopped at: Completed 01-02-PLAN.md (Cognito User Pool wafr-user-pool — us-east-1_U4ugKPUrh, App Client wafr-app-client — 65fis729feu3lr317rm6oaue5s, Groups WafrTeam + WafrClients)
+Stopped at: Completed 01-03-PLAN.md (IAM policy DynamoDBCRUD/CognitoReadOnly/SecretsManagerCognitoRead, Secrets Manager secrets wafr-cognito-user-pool-id/wafr-cognito-client-id, backend and frontend App Runner env vars updated — Phase 1 complete)
 Resume file: None

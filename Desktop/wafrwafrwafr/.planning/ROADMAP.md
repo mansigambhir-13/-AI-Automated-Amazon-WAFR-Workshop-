@@ -12,7 +12,7 @@ This milestone layers three missing production capabilities onto the existing WA
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Infrastructure Foundation** - Provision DynamoDB tables, Cognito User Pool, and IAM permissions — zero application code changes
+- [x] **Phase 1: Infrastructure Foundation** - Provision DynamoDB tables, Cognito User Pool, and IAM permissions — zero application code changes (completed 2026-02-28)
 - [ ] **Phase 2: Storage Migration** - Replace file-based session storage with DynamoDB; deploy with auth bypassed to validate in isolation
 - [ ] **Phase 3: Backend Auth and API Security** - JWT middleware, CORS lockdown, rate limiting, input validation, and audit trail on the FastAPI backend
 - [ ] **Phase 4: Frontend Auth Integration** - Amplify v6 login/logout UI, token attachment on all API requests, and role-based access enforcement
@@ -107,7 +107,7 @@ Phases execute in strict dependency order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Infrastructure Foundation | 2/3 | In Progress|  |
+| 1. Infrastructure Foundation | 3/3 | Complete   | 2026-02-28 |
 | 2. Storage Migration | 0/3 | Not started | - |
 | 3. Backend Auth and API Security | 0/3 | Not started | - |
 | 4. Frontend Auth Integration | 0/2 | Not started | - |
