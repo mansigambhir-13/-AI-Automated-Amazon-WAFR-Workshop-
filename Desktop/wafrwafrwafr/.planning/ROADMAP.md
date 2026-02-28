@@ -94,11 +94,11 @@ Plans:
   2. `AUTH_REQUIRED=true` is set in the backend App Runner environment and the existing unauthenticated path no longer works (curl without token gets 401)
   3. A team user can log in, start an assessment, approve review decisions, and download a report in a single end-to-end smoke test
   4. A client user can log in and see only their own assessments — attempting to access another session ID returns a 403 or empty result
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 05-01: Run migration script, verify idempotency, and set AUTH_REQUIRED=true
-- [ ] 05-02: End-to-end smoke test for team user and client user role isolation
+- [ ] 05-01-PLAN.md — Create entrypoint wrapper, update Dockerfile, deploy both services to App Runner, create Cognito test users (Wave 1)
+- [ ] 05-02-PLAN.md — Create smoke test checklist, execute end-to-end validation for both user roles, verify audit log and migration idempotency (Wave 2)
 
 ## Progress
 
