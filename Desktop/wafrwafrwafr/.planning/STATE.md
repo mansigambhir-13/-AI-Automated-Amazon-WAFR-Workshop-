@@ -9,14 +9,14 @@ See: .planning/PROJECT.md (updated 2026-02-27)
 
 ## Current Position
 
-Phase: 2 of 5 (Storage Migration) — COMPLETE
-Plan: 3 of 3 — all plans complete
-**Current Plan:** 03-01 (next)
+Phase: 3 of 5 (Backend Auth and API Security) — IN PROGRESS
+Plan: 1 of 3 complete
+**Current Plan:** 03-02 (next)
 **Total Plans in Phase:** 3
-Status: Phase 2 complete — ready for Phase 3
-Last activity: 2026-02-28 — Completed 02-03 (idempotent migration script for file-to-DynamoDB session and pipeline result migration, --dry-run, summary report, dual-handler logging)
+Status: Plan 03-01 complete — JWT auth middleware and Pydantic validation wired
+Last activity: 2026-02-28 — Completed 03-01 (PyJWT RS256 Cognito JWT middleware, wafr/auth subpackage, all 23 endpoints protected, max_length Pydantic constraints)
 
-Progress: [████░░░░░░] 28%
+Progress: [█████░░░░░] 36%
 
 ## Performance Metrics
 
@@ -42,6 +42,7 @@ Progress: [████░░░░░░] 28%
 | Phase 02-storage-migration P01 | 5 | 1 task | 1 file |
 | Phase 02-storage-migration P02 | 8 | 2 tasks | 2 files |
 | Phase 02-storage-migration P03 | 4 | 1 task | 1 file |
+| Phase 03-backend-auth-and-api-security P01 | 6 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -76,6 +77,9 @@ Recent decisions affecting current work:
 - [02-03]: isinstance(storage, DynamoDBReviewStorage) check after factory call confirms backend type before using non-ABC methods save_pipeline_results/load_pipeline_results
 - [02-03]: Log file auto-named migration_<UTC-timestamp>.log when --log-file is not specified — preserves logs from previous runs rather than overwriting them
 - [02-03]: exit(1) on any individual migration failures — allows CI to detect partial failures; exit(0) only when all items processed successfully or skipped
+- [Phase 03-backend-auth-and-api-security]: HTTPBearer(auto_error=False) used — prevents default 403 on missing header; manual 401 raised per spec
+- [Phase 03-backend-auth-and-api-security]: Lazy PyJWKClient init via _get_jwks_client() helper — prevents KeyError at import time when Cognito env vars not set
+- [Phase 03-backend-auth-and-api-security]: req: Request added proactively to all protected endpoints — slowapi (Plan 03-03) readiness without a second server.py edit
 
 ### Pending Todos
 
@@ -90,5 +94,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-28
-Stopped at: Completed 02-03-PLAN.md (idempotent migration script for file-to-DynamoDB session and pipeline result migration, --dry-run, formatted summary report, dual-handler logging). Phase 2 Storage Migration is now complete.
+Stopped at: Completed 03-01-PLAN.md (PyJWT RS256 Cognito JWT middleware via wafr/auth subpackage, verify_token/require_team_role deps on all 23 endpoints, Pydantic max_length constraints on all request models).
 Resume file: None

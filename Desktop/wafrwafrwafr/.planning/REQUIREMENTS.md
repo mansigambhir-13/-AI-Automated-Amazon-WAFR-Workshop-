@@ -16,8 +16,8 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Authentication
 
-- [ ] **AUTH-01**: AWS Cognito User Pool created with team and client user groups
-- [ ] **AUTH-02**: Backend validates Cognito JWT access tokens on all API endpoints via FastAPI middleware
+- [x] **AUTH-01**: AWS Cognito User Pool created with team and client user groups
+- [x] **AUTH-02**: Backend validates Cognito JWT access tokens on all API endpoints via FastAPI middleware
 - [ ] **AUTH-03**: Frontend provides login, signup, and password reset UI via Amplify
 - [ ] **AUTH-04**: Team users can create/view/manage all assessments; client users can only view their own
 
@@ -25,7 +25,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 - [ ] **SECR-01**: CORS is locked down to only allow requests from the frontend App Runner domain
 - [ ] **SECR-02**: Rate limiting is enforced per-user/IP on all API endpoints via slowapi
-- [ ] **SECR-03**: All API inputs are validated with Pydantic models including transcript size limits
+- [x] **SECR-03**: All API inputs are validated with Pydantic models including transcript size limits
 - [ ] **SECR-04**: Audit trail logs who ran what assessment, when, with what transcript
 
 ### Operations
@@ -77,13 +77,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | STOR-02 | Phase 2 | Complete (02-01) |
 | STOR-03 | Phase 2 | Complete (02-01) |
 | STOR-04 | Phase 2 | Complete (02-01) |
-| AUTH-01 | Phase 3 | Pending |
-| AUTH-02 | Phase 3 | Pending |
+| AUTH-01 | Phase 3 | Complete |
+| AUTH-02 | Phase 3 | Complete |
 | AUTH-03 | Phase 4 | Pending |
 | AUTH-04 | Phase 4 | Pending |
 | SECR-01 | Phase 3 | Pending |
 | SECR-02 | Phase 3 | Pending |
-| SECR-03 | Phase 3 | Pending |
+| SECR-03 | Phase 3 | Complete |
 | SECR-04 | Phase 3 | Pending |
 | OPER-01 | Phase 5 | Pending |
 | OPER-02 | Phase 2 | Pending |
