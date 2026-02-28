@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Infrastructure Foundation** - Provision DynamoDB tables, Cognito User Pool, and IAM permissions — zero application code changes (completed 2026-02-28)
 - [x] **Phase 2: Storage Migration** - Replace file-based session storage with DynamoDB; deploy with auth bypassed to validate in isolation (completed 2026-02-28)
-- [ ] **Phase 3: Backend Auth and API Security** - JWT middleware, CORS lockdown, rate limiting, input validation, and audit trail on the FastAPI backend
+- [x] **Phase 3: Backend Auth and API Security** - JWT middleware, CORS lockdown, rate limiting, input validation, and audit trail on the FastAPI backend (completed 2026-02-28)
 - [ ] **Phase 4: Frontend Auth Integration** - Amplify v6 login/logout UI, token attachment on all API requests, and role-based access enforcement
 - [ ] **Phase 5: Data Migration and Audit Validation** - Run one-time file-to-DynamoDB migration, flip AUTH_REQUIRED=true, and smoke-test end-to-end
 
@@ -109,6 +109,6 @@ Phases execute in strict dependency order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Infrastructure Foundation | 3/3 | Complete   | 2026-02-28 |
 | 2. Storage Migration | 3/3 | Complete   | 2026-02-28 |
-| 3. Backend Auth and API Security | 2/3 | In Progress|  |
+| 3. Backend Auth and API Security | 3/3 | Complete   | 2026-02-28 |
 | 4. Frontend Auth Integration | 0/2 | Not started | - |
 | 5. Data Migration and Audit Validation | 0/2 | Not started | - |

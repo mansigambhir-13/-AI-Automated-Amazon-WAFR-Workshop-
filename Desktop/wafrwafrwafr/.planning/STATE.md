@@ -44,6 +44,7 @@ Progress: [██████░░░░] 42%
 | Phase 02-storage-migration P03 | 4 | 1 task | 1 file |
 | Phase 03-backend-auth-and-api-security P01 | 6 | 2 tasks | 4 files |
 | Phase 03-backend-auth-and-api-security P02 | 5 | 2 tasks | 4 files |
+| Phase 03-backend-auth-and-api-security P03 | 3 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -84,6 +85,9 @@ Recent decisions affecting current work:
 - [Phase 03-backend-auth-and-api-security]: SlowAPIMiddleware registered before CORSMiddleware (CORS outermost) so 401/429 errors carry CORS headers
 - [Phase 03-backend-auth-and-api-security]: Pydantic body params renamed to 'body'; Starlette Request named 'request' — slowapi requires parameter named exactly 'request'
 - [Phase 03-backend-auth-and-api-security]: WAFR_CORS_ORIGINS env var with comma-separated origins — explicit list required when allow_credentials=True (no wildcard)
+- [Phase 03-backend-auth-and-api-security]: asyncio.get_running_loop() used in AuditMiddleware (not get_event_loop()) — get_event_loop() is deprecated in Python 3.10+; RuntimeError fallback handles non-async test contexts
+- [Phase 03-backend-auth-and-api-security]: AuditMiddleware is pure-ASGI class (not BaseHTTPMiddleware) — registered as innermost middleware; stack is now: AuditMiddleware -> SlowAPIMiddleware -> CORSMiddleware
+- [Phase 03-backend-auth-and-api-security]: Transcript excluded from audit body on /run and /start (transcript_length field instead) — avoids DynamoDB 400KB item limit for 500K char transcripts
 
 ### Pending Todos
 
