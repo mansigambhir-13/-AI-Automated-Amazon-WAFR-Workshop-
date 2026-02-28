@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-02-27)
 
 **Core value:** Every WAFR assessment session is durably stored, only accessible to authorized users, and the backend API is protected from unauthorized access and abuse.
-**Current focus:** Phase 4 in progress — Plan 2 of 2, Task 1 complete (stopped at human-verify checkpoint)
+**Current focus:** Phase 4 COMPLETE — Ready for Phase 5 (Data Migration and Audit Validation)
 
 ## Current Position
 
-Phase: 4 of 5 (Frontend Auth Integration) — IN PROGRESS
-Plan: 2 of 2 (Task 1 complete — stopped at checkpoint:human-verify)
+Phase: 4 of 5 (Frontend Auth Integration) — COMPLETE
+Plan: 2 of 2 — COMPLETE
 **Total Plans in Phase:** 2
-Status: Phase 4 Plan 2 Task 1 complete. User identity + role badge + sign-out in header; role-based UI hiding on dashboard; /new-assessment route guard; downloading state on report buttons. Stopped at checkpoint:human-verify (Task 2).
-Last activity: 2026-02-28 — Phase 4 Plan 2 Task 1 executed and committed (36a9c8a in aws-frontend)
+Status: Phase 4 fully complete. AUTH-03 and AUTH-04 satisfied. Role-based UI enforcement, user identity in header, auth-aware downloads, human verification checkpoint approved.
+Last activity: 2026-02-28 — Phase 4 Plan 2 complete. Human-verify checkpoint approved by user. SUMMARY.md created.
 
-Progress: [████████░░] 80%
+Progress: [█████████░] 90%
 
 ## Performance Metrics
 
@@ -45,6 +45,7 @@ Progress: [████████░░] 80%
 | Phase 03-backend-auth-and-api-security P02 | 5 | 2 tasks | 4 files |
 | Phase 03-backend-auth-and-api-security P03 | 3 | 2 tasks | 3 files |
 | Phase 04-frontend-auth-integration P01 | 8 | 2 tasks | 11 files |
+| Phase 04-frontend-auth-integration P02 | checkpoint-approved | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -93,6 +94,10 @@ Recent decisions affecting current work:
 - [04-01]: authHeaders() exported from api.ts — single source of truth for Bearer token injection, reused by sse-client.ts and backend-api.ts
 - [04-01]: Auth-aware downloadReport/downloadAwsReport/downloadResults functions added — direct URL hrefs cannot carry Authorization headers; blob-download pattern required
 - [04-01]: Toaster kept outside AmplifyProvider in layout.tsx — toast notifications must work on the login screen before authentication
+- [04-02]: isTeam defaults to true before role loads — prevents flash of hidden New Assessment button for team users on initial render
+- [04-02]: authorized state with early return null on /new-assessment — prevents form flash for WafrClients before redirect executes
+- [04-02]: downloading state string (null | pdf | aws) — supports independent loading indicators for each report download button
+- [04-02]: Sign-out button placed directly in header (not behind dropdown) — simpler UX, visible alongside user badge
 
 ### Pending Todos
 
@@ -107,5 +112,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-28
-Stopped at: Phase 4, Plan 2, Task 1 complete. Stopped at checkpoint:human-verify (Task 2). Await user approval of role-based UI and auth integration.
+Stopped at: Phase 4 COMPLETE. Plan 04-02 complete — human verification checkpoint approved. Ready for Phase 5 (Data Migration and Audit Validation).
 Resume file: None
