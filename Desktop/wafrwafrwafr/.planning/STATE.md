@@ -11,10 +11,10 @@ See: .planning/PROJECT.md (updated 2026-02-27)
 
 Phase: 1 of 5 (Infrastructure Foundation)
 Plan: 1 of 3 in current phase
-**Current Plan:** 1
+**Current Plan:** 2
 **Total Plans in Phase:** 3
 Status: Ready to execute
-Last activity: 2026-02-28 — Completed 01-01 (DynamoDB table provisioning)
+Last activity: 2026-02-28 — Completed 01-02 (Cognito User Pool, App Client, and RBAC groups)
 
 Progress: [█░░░░░░░░░] 7%
 
@@ -36,6 +36,7 @@ Progress: [█░░░░░░░░░] 7%
 - Trend: —
 
 *Updated after each plan completion*
+| Phase 01-infrastructure-foundation P02 | 2 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -52,6 +53,9 @@ Recent decisions affecting current work:
 - [01-01]: timestamp_session_id (underscore) used as sort key for wafr-audit-log — hash character # is reserved in DynamoDB expression syntax
 - [01-01]: expires_at TTL attribute on wafr-sessions and wafr-review-sessions — application code sets Unix epoch at write time; 365-day TTL per locked decision
 - [01-01]: wafr-users and wafr-audit-log have no TTL — user records and audit trails retained indefinitely per locked decision
+- [Phase 01-02]: No client secret on App Client — public client required for Amplify frontend (browser cannot store secrets securely)
+- [Phase 01-02]: ALLOW_USER_SRP_AUTH only — excludes ALLOW_USER_PASSWORD_AUTH to prevent plaintext password transmission (Pitfall 5 from research)
+- [Phase 01-02]: 1-hour access token validity — short-lived tokens reduce blast radius if compromised
 
 ### Pending Todos
 
@@ -66,5 +70,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-28
-Stopped at: Completed 01-01-PLAN.md (DynamoDB table provisioning — all 4 tables ACTIVE)
+Stopped at: Completed 01-02-PLAN.md (Cognito User Pool wafr-user-pool — us-east-1_U4ugKPUrh, App Client wafr-app-client — 65fis729feu3lr317rm6oaue5s, Groups WafrTeam + WafrClients)
 Resume file: None

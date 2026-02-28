@@ -32,7 +32,7 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 - [ ] **OPER-01**: Existing file-based sessions are migrated to DynamoDB via migration script
 - [ ] **OPER-02**: AUTH_REQUIRED environment flag enables gradual auth rollout
-- [ ] **OPER-03**: WafrAppRunnerInstanceRole IAM policy includes DynamoDB and Cognito permissions
+- [x] **OPER-03**: WafrAppRunnerInstanceRole IAM policy includes DynamoDB and Cognito permissions
 
 ## v2 Requirements
 
@@ -87,7 +87,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SECR-04 | Phase 3 | Pending |
 | OPER-01 | Phase 5 | Pending |
 | OPER-02 | Phase 2 | Pending |
-| OPER-03 | Phase 1 (Plan 01-03) | Pending |
+| OPER-03 | Phase 1 (Plan 01-03) | Complete |
 
 **Coverage:**
 - v1 requirements: 15 total
