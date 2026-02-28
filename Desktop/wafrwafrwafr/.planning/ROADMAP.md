@@ -79,11 +79,11 @@ Plans:
   2. A team user who logs in can create and view all assessments; a client user who logs in can only see assessments associated with their account
   3. Every API request from the frontend includes an `Authorization: Bearer <access_token>` header with a valid Cognito access token
   4. When an access token expires, the frontend transparently refreshes it and retries the request without the user needing to log in again
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 04-01: Verify Amplify v6 + Next.js 16 compatibility; configure Amplify against existing Cognito User Pool
-- [ ] 04-02: Add Authenticator component to layout.tsx and update api.ts to attach access tokens on all requests
+- [ ] 04-01-PLAN.md — Install Amplify v6, create AmplifyProvider + Authenticator with sessionStorage, create auth helpers, wire Bearer token on all API/SSE requests, update Dockerfile with Cognito build ARGs (Wave 1)
+- [ ] 04-02-PLAN.md — Add user info + role badge + sign-out to header, enforce role-based UI visibility on dashboard and new-assessment, auth-aware report downloads, human verification checkpoint (Wave 2)
 
 ### Phase 5: Data Migration and Audit Validation
 **Goal**: All existing file-based sessions are in DynamoDB, authentication is enforced on all endpoints, and the full end-to-end workflow is verified for both user roles
@@ -110,5 +110,5 @@ Phases execute in strict dependency order: 1 → 2 → 3 → 4 → 5
 | 1. Infrastructure Foundation | 3/3 | Complete   | 2026-02-28 |
 | 2. Storage Migration | 3/3 | Complete   | 2026-02-28 |
 | 3. Backend Auth and API Security | 3/3 | Complete   | 2026-02-28 |
-| 4. Frontend Auth Integration | 0/2 | Not started | - |
+| 4. Frontend Auth Integration | 0/2 | Planned | - |
 | 5. Data Migration and Audit Validation | 0/2 | Not started | - |
