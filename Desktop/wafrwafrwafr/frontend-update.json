@@ -1,0 +1,25 @@
+{
+  "ServiceArn": "arn:aws:apprunner:us-east-1:842387632939:service/wafr-frontend-app/0810ab0676de401e9a3ed4de81e6c03c",
+  "SourceConfiguration": {
+    "ImageRepository": {
+      "ImageIdentifier": "842387632939.dkr.ecr.us-east-1.amazonaws.com/wafr-frontend:latest",
+      "ImageConfiguration": {
+        "Port": "3000",
+        "RuntimeEnvironmentVariables": {
+          "AUTH_REQUIRED": "true"
+        },
+        "RuntimeEnvironmentSecrets": {
+          "WAFR_COGNITO_USER_POOL_ID": "arn:aws:secretsmanager:us-east-1:842387632939:secret:wafr-cognito-user-pool-id-jPl3bS",
+          "WAFR_COGNITO_CLIENT_ID": "arn:aws:secretsmanager:us-east-1:842387632939:secret:wafr-cognito-client-id-fZZtaL"
+        }
+      },
+      "ImageRepositoryType": "ECR"
+    },
+    "AutoDeploymentsEnabled": false
+  },
+  "InstanceConfiguration": {
+    "Cpu": "1024",
+    "Memory": "2048",
+    "InstanceRoleArn": "arn:aws:iam::842387632939:role/WafrAppRunnerInstanceRole"
+  }
+}

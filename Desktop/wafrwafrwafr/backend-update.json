@@ -1,0 +1,27 @@
+{
+  "ServiceArn": "arn:aws:apprunner:us-east-1:842387632939:service/wafr-backend/aa3b1b32d7944f65b5aa1eb76c89357f",
+  "SourceConfiguration": {
+    "ImageRepository": {
+      "ImageIdentifier": "842387632939.dkr.ecr.us-east-1.amazonaws.com/wafr-backend:latest",
+      "ImageConfiguration": {
+        "Port": "8000",
+        "RuntimeEnvironmentVariables": {
+          "AWS_DEFAULT_REGION": "us-east-1",
+          "PYTHONUNBUFFERED": "1",
+          "S3_BUCKET": "wafr-agent-production-artifacts-842387632939",
+          "AUTH_REQUIRED": "true",
+          "WAFR_DYNAMO_SESSIONS_TABLE": "wafr-sessions",
+          "WAFR_DYNAMO_REVIEW_SESSIONS_TABLE": "wafr-review-sessions",
+          "WAFR_DYNAMO_USERS_TABLE": "wafr-users",
+          "WAFR_DYNAMO_AUDIT_TABLE": "wafr-audit-log"
+        },
+        "RuntimeEnvironmentSecrets": {
+          "WAFR_COGNITO_USER_POOL_ID": "arn:aws:secretsmanager:us-east-1:842387632939:secret:wafr-cognito-user-pool-id-jPl3bS",
+          "WAFR_COGNITO_CLIENT_ID": "arn:aws:secretsmanager:us-east-1:842387632939:secret:wafr-cognito-client-id-fZZtaL"
+        }
+      },
+      "ImageRepositoryType": "ECR"
+    },
+    "AutoDeploymentsEnabled": false
+  }
+}
