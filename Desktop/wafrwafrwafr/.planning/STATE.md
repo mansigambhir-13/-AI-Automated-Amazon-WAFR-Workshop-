@@ -5,39 +5,41 @@
 See: .planning/PROJECT.md (updated 2026-02-27)
 
 **Core value:** Every WAFR assessment session is durably stored, only accessible to authorized users, and the backend API is protected from unauthorized access and abuse.
-**Current focus:** Phase 1 — Infrastructure Foundation
+**Current focus:** Phase 2 — Storage Migration
 
 ## Current Position
 
-Phase: 1 of 5 (Infrastructure Foundation)
-Plan: 1 of 3 in current phase
-**Current Plan:** Not started
+Phase: 2 of 5 (Storage Migration)
+Plan: 2 of 3 in current phase
+**Current Plan:** 02-02
 **Total Plans in Phase:** 3
 Status: Ready to execute
-Last activity: 2026-02-28 — Completed 01-03 (IAM policy extended, Cognito secrets in Secrets Manager, both App Runner services updated with env vars)
+Last activity: 2026-02-28 — Completed 02-01 (DynamoDBReviewStorage implemented with all ABC methods, float-to-Decimal converters, S3 offload for large items and transcripts)
 
-Progress: [█░░░░░░░░░] 7%
+Progress: [██░░░░░░░░] 14%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 7 min
-- Total execution time: 0.1 hours
+- Total plans completed: 2
+- Average duration: 6 min
+- Total execution time: 0.2 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-infrastructure-foundation | 1 | 7 min | 7 min |
+| 02-storage-migration | 1 | 5 min | 5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (7 min)
-- Trend: —
+- Last 5 plans: 01-01 (7 min), 02-01 (5 min)
+- Trend: stable
 
 *Updated after each plan completion*
 | Phase 01-infrastructure-foundation P02 | 2 | 2 tasks | 2 files |
 | Phase 01-infrastructure-foundation P01-03 | 10 | 2 tasks | 5 files |
+| Phase 02-storage-migration P01 | 5 | 1 task | 1 file |
 
 ## Accumulated Context
 
@@ -61,6 +63,10 @@ Recent decisions affecting current work:
 - [Phase 01-03]: WafrAppRunnerInstanceRole attached to frontend App Runner — required when using RuntimeEnvironmentSecrets; uses same role as backend for consistency
 - [Phase 01-03]: wafr-cognito-* wildcard in IAM SecretsManagerCognitoRead — Secrets Manager appends random 6-char suffix; wildcard covers current and future rotated secrets
 - [Phase 01-03]: AUTH_REQUIRED=true set immediately on both services — per locked roadmap decision to enable auth enforcement before Phase 3 backend middleware lands
+- [02-01]: 300KB S3 overflow threshold — safe headroom below 400KB DynamoDB limit; current stripped pipeline results top at 147KB so threshold is a safety valve only
+- [02-01]: Pipeline results stored as JSON string attribute (not DynamoDB map) — avoids Decimal conversion on deeply nested 11-step pipeline dicts; string up to 400KB satisfies the constraint
+- [02-01]: Per-item rows pattern for wafr-review-sessions — each review item as separate DynamoDB row (item_id=<review_id>), enables individual updates without rewriting whole session
+- [02-01]: create_review_storage() extended with 'dynamodb' branch reading WAFR_DYNAMO_* env vars; existing 'memory' and 'file' branches untouched
 
 ### Pending Todos
 
@@ -70,10 +76,10 @@ None yet.
 
 - [Phase 4]: Amplify v6 documents Next.js support up to 15.x; project uses 16.1.6 — must verify compatibility before writing any frontend auth code. Fallback: amazon-cognito-identity-js directly.
 - [Phase 4]: NEXT_PUBLIC_* variables are baked at build time in Next.js but App Runner injects at runtime — must verify env vars are available during App Runner build step.
-- [Phase 2]: Existing session JSON file sizes in /review_sessions/ are unknown — must measure 3-5 files before writing migration code to confirm whether S3 offload for transcripts is mandatory.
+- [02-01 resolved]: Session JSON file sizes confirmed in research — 77-147KB after stripping report_base64; S3 offload for transcripts is locked decision but not size-driven for current data.
 
 ## Session Continuity
 
 Last session: 2026-02-28
-Stopped at: Completed 01-03-PLAN.md (IAM policy DynamoDBCRUD/CognitoReadOnly/SecretsManagerCognitoRead, Secrets Manager secrets wafr-cognito-user-pool-id/wafr-cognito-client-id, backend and frontend App Runner env vars updated — Phase 1 complete)
+Stopped at: Completed 02-01-PLAN.md (DynamoDBReviewStorage implemented with all 7 ABC methods, float-to-Decimal converters, S3 offload for items >300KB and always for transcripts, sync_user_profile, factory updated)
 Resume file: None

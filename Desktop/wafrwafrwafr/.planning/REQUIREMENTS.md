@@ -9,10 +9,10 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Storage
 
-- [ ] **STOR-01**: Assessment sessions are stored durably in DynamoDB and survive container restarts
-- [ ] **STOR-02**: Pipeline results (orchestrator output) are stored in DynamoDB with S3 offload for items >400KB
-- [ ] **STOR-03**: Human review decisions (approve/reject/modify per question) are persisted in DynamoDB
-- [ ] **STOR-04**: User profiles with roles and preferences are stored in DynamoDB
+- [x] **STOR-01**: Assessment sessions are stored durably in DynamoDB and survive container restarts
+- [x] **STOR-02**: Pipeline results (orchestrator output) are stored in DynamoDB with S3 offload for items >400KB
+- [x] **STOR-03**: Human review decisions (approve/reject/modify per question) are persisted in DynamoDB
+- [x] **STOR-04**: User profiles with roles and preferences are stored in DynamoDB
 
 ### Authentication
 
@@ -73,10 +73,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| STOR-01 | Phase 2 | Pending |
-| STOR-02 | Phase 2 | Pending |
-| STOR-03 | Phase 2 | Pending |
-| STOR-04 | Phase 2 | Pending |
+| STOR-01 | Phase 2 | Complete (02-01) |
+| STOR-02 | Phase 2 | Complete (02-01) |
+| STOR-03 | Phase 2 | Complete (02-01) |
+| STOR-04 | Phase 2 | Complete (02-01) |
 | AUTH-01 | Phase 3 | Pending |
 | AUTH-02 | Phase 3 | Pending |
 | AUTH-03 | Phase 4 | Pending |

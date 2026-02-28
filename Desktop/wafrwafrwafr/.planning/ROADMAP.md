@@ -49,7 +49,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Implement DynamoDBReviewStorage class with float-to-Decimal converters, S3 offload, and all ABC methods (Wave 1)
+- [x] 02-01-PLAN.md — Implement DynamoDBReviewStorage class with float-to-Decimal converters, S3 offload, and all ABC methods (Wave 1) (completed 2026-02-28)
 - [ ] 02-02-PLAN.md — Wire storage factory for 'dynamodb', remove dead deployment.entrypoint code from server.py, connect REVIEW_STORAGE_TYPE env var (Wave 2)
 - [ ] 02-03-PLAN.md — Build idempotent migration script for existing file-based sessions and pipeline results (Wave 3)
 
@@ -108,7 +108,7 @@ Phases execute in strict dependency order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Infrastructure Foundation | 3/3 | Complete   | 2026-02-28 |
-| 2. Storage Migration | 0/3 | Not started | - |
+| 2. Storage Migration | 1/3 | In progress | - |
 | 3. Backend Auth and API Security | 0/3 | Not started | - |
 | 4. Frontend Auth Integration | 0/2 | Not started | - |
 | 5. Data Migration and Audit Validation | 0/2 | Not started | - |
