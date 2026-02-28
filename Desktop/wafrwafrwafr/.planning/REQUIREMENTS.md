@@ -87,7 +87,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SECR-04 | Phase 3 | Pending |
 | OPER-01 | Phase 5 | Pending |
 | OPER-02 | Phase 2 | Pending |
-| OPER-03 | Phase 1 | Pending |
+| OPER-03 | Phase 1 (Plan 01-03) | Pending |
 
 **Coverage:**
 - v1 requirements: 15 total
@@ -96,4 +96,4 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 ---
 *Requirements defined: 2026-02-28*
-*Last updated: 2026-02-28 after roadmap creation*
+*Last updated: 2026-02-28 after 01-01 plan execution (DynamoDB tables provisioned)*

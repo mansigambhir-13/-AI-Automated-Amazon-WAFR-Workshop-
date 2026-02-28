@@ -10,27 +10,29 @@ See: .planning/PROJECT.md (updated 2026-02-27)
 ## Current Position
 
 Phase: 1 of 5 (Infrastructure Foundation)
-Plan: 0 of 3 in current phase
-Status: Ready to plan
-Last activity: 2026-02-28 — Roadmap created from requirements and research
+Plan: 1 of 3 in current phase
+**Current Plan:** 1
+**Total Plans in Phase:** 3
+Status: Ready to execute
+Last activity: 2026-02-28 — Completed 01-01 (DynamoDB table provisioning)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 7%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 0
-- Average duration: —
-- Total execution time: 0 hours
+- Total plans completed: 1
+- Average duration: 7 min
+- Total execution time: 0.1 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| - | - | - | - |
+| 01-infrastructure-foundation | 1 | 7 min | 7 min |
 
 **Recent Trend:**
-- Last 5 plans: —
+- Last 5 plans: 01-01 (7 min)
 - Trend: —
 
 *Updated after each plan completion*
@@ -46,6 +48,10 @@ Recent decisions affecting current work:
 - [Roadmap]: CORS middleware registered last in FastAPI code (executes first on requests) to prevent auth 401 responses arriving at browser without CORS headers
 - [Roadmap]: PyJWT 2.11.0 chosen over python-jose/fastapi-cognito — python-jose depends on archived cognitojwt package
 - [Roadmap]: AUTH_REQUIRED environment flag enables deploying backend auth before frontend is ready (no atomic deployment needed)
+- [01-01]: PAY_PER_REQUEST billing on all four DynamoDB tables — matches App Runner scale-to-zero profile, no idle charges
+- [01-01]: timestamp_session_id (underscore) used as sort key for wafr-audit-log — hash character # is reserved in DynamoDB expression syntax
+- [01-01]: expires_at TTL attribute on wafr-sessions and wafr-review-sessions — application code sets Unix epoch at write time; 365-day TTL per locked decision
+- [01-01]: wafr-users and wafr-audit-log have no TTL — user records and audit trails retained indefinitely per locked decision
 
 ### Pending Todos
 
@@ -60,5 +66,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-28
-Stopped at: Roadmap created and written to .planning/ROADMAP.md
+Stopped at: Completed 01-01-PLAN.md (DynamoDB table provisioning — all 4 tables ACTIVE)
 Resume file: None

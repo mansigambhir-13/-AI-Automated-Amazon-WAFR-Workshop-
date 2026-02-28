@@ -32,7 +32,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Provision four DynamoDB tables with key schemas, GSIs, TTL, and PITR (Wave 1)
+- [x] 01-01-PLAN.md — Provision four DynamoDB tables with key schemas, GSIs, TTL, and PITR (Wave 1)
 - [ ] 01-02-PLAN.md — Create Cognito User Pool, public App Client, and WafrTeam/WafrClients groups (Wave 1)
 - [ ] 01-03-PLAN.md — Extend IAM policy, store Cognito values in Secrets Manager, update App Runner env vars (Wave 2)
 
@@ -107,7 +107,7 @@ Phases execute in strict dependency order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Infrastructure Foundation | 0/3 | Not started | - |
+| 1. Infrastructure Foundation | 1/3 | In progress | - |
 | 2. Storage Migration | 0/3 | Not started | - |
 | 3. Backend Auth and API Security | 0/3 | Not started | - |
 | 4. Frontend Auth Integration | 0/2 | Not started | - |
