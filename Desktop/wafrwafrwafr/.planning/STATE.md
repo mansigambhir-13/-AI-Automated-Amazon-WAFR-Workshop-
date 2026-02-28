@@ -5,15 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-02-27)
 
 **Core value:** Every WAFR assessment session is durably stored, only accessible to authorized users, and the backend API is protected from unauthorized access and abuse.
-**Current focus:** Phase 4 in progress — Plan 1 of 1 complete
+**Current focus:** Phase 4 in progress — Plan 2 of 2, Task 1 complete (stopped at human-verify checkpoint)
 
 ## Current Position
 
 Phase: 4 of 5 (Frontend Auth Integration) — IN PROGRESS
-Plan: 1 of 1 complete
-**Total Plans in Phase:** 1
-Status: Phase 4 Plan 1 complete. Amplify v6 installed, Cognito login gate wired, Bearer token on all API/SSE calls, auth-aware downloads.
-Last activity: 2026-02-28 — Phase 4 Plan 1 executed and committed
+Plan: 2 of 2 (Task 1 complete — stopped at checkpoint:human-verify)
+**Total Plans in Phase:** 2
+Status: Phase 4 Plan 2 Task 1 complete. User identity + role badge + sign-out in header; role-based UI hiding on dashboard; /new-assessment route guard; downloading state on report buttons. Stopped at checkpoint:human-verify (Task 2).
+Last activity: 2026-02-28 — Phase 4 Plan 2 Task 1 executed and committed (36a9c8a in aws-frontend)
 
 Progress: [████████░░] 80%
 
@@ -107,5 +107,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-28
-Stopped at: Phase 4, Plan 1 complete (04-01-PLAN.md executed). Phase 4 complete — ready for Phase 5 deployment.
+Stopped at: Phase 4, Plan 2, Task 1 complete. Stopped at checkpoint:human-verify (Task 2). Await user approval of role-based UI and auth integration.
 Resume file: None
