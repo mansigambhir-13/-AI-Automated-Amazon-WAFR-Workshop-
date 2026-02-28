@@ -5,18 +5,18 @@
 See: .planning/PROJECT.md (updated 2026-02-27)
 
 **Core value:** Every WAFR assessment session is durably stored, only accessible to authorized users, and the backend API is protected from unauthorized access and abuse.
-**Current focus:** Phase 2 — Storage Migration
+**Current focus:** Phase 3 — Backend Auth and API Security
 
 ## Current Position
 
-Phase: 2 of 5 (Storage Migration)
-Plan: 3 of 3 in current phase
-**Current Plan:** 02-03
+Phase: 2 of 5 (Storage Migration) — COMPLETE
+Plan: 3 of 3 — all plans complete
+**Current Plan:** 03-01 (next)
 **Total Plans in Phase:** 3
-Status: Ready to execute
-Last activity: 2026-02-28 — Completed 02-02 (dead deployment.entrypoint blocks removed from server.py, REVIEW_STORAGE_TYPE env var confirmed, pipeline results and transcripts routed to DynamoDB storage)
+Status: Phase 2 complete — ready for Phase 3
+Last activity: 2026-02-28 — Completed 02-03 (idempotent migration script for file-to-DynamoDB session and pipeline result migration, --dry-run, summary report, dual-handler logging)
 
-Progress: [███░░░░░░░] 21%
+Progress: [████░░░░░░] 28%
 
 ## Performance Metrics
 
@@ -30,10 +30,10 @@ Progress: [███░░░░░░░] 21%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-infrastructure-foundation | 1 | 7 min | 7 min |
-| 02-storage-migration | 2 | 13 min | 6.5 min |
+| 02-storage-migration | 3 | 17 min | 5.7 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (7 min), 02-01 (5 min), 02-02 (8 min)
+- Last 5 plans: 01-01 (7 min), 02-01 (5 min), 02-02 (8 min), 02-03 (4 min)
 - Trend: stable
 
 *Updated after each plan completion*
@@ -41,6 +41,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 01-infrastructure-foundation P01-03 | 10 | 2 tasks | 5 files |
 | Phase 02-storage-migration P01 | 5 | 1 task | 1 file |
 | Phase 02-storage-migration P02 | 8 | 2 tasks | 2 files |
+| Phase 02-storage-migration P03 | 4 | 1 task | 1 file |
 
 ## Accumulated Context
 
@@ -71,6 +72,10 @@ Recent decisions affecting current work:
 - [02-02]: **kwargs added to create_review_storage() for forward-compatibility — callers may pass extra keyword args without error if signature evolves
 - [02-02]: Dead deployment.entrypoint blocks fully removed from server.py (three blocks); all DynamoDB access now routes through wafr/storage/DynamoDBReviewStorage
 - [02-02]: hasattr guards used for save_pipeline_results and save_transcript in server.py — method presence signals DynamoDB backend; file/memory backends silently skip
+- [02-03]: sys.path manipulation prepends wafr-agents/ project root in migration script so 'from wafr.storage.review_storage import ...' works from any working directory
+- [02-03]: isinstance(storage, DynamoDBReviewStorage) check after factory call confirms backend type before using non-ABC methods save_pipeline_results/load_pipeline_results
+- [02-03]: Log file auto-named migration_<UTC-timestamp>.log when --log-file is not specified — preserves logs from previous runs rather than overwriting them
+- [02-03]: exit(1) on any individual migration failures — allows CI to detect partial failures; exit(0) only when all items processed successfully or skipped
 
 ### Pending Todos
 
@@ -85,5 +90,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-28
-Stopped at: Completed 02-02-PLAN.md (dead deployment.entrypoint blocks removed from server.py, factory **kwargs added, pipeline results and transcripts routed to DynamoDB storage via hasattr guards)
+Stopped at: Completed 02-03-PLAN.md (idempotent migration script for file-to-DynamoDB session and pipeline result migration, --dry-run, formatted summary report, dual-handler logging). Phase 2 Storage Migration is now complete.
 Resume file: None

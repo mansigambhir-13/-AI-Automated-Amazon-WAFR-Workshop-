@@ -13,7 +13,7 @@ This milestone layers three missing production capabilities onto the existing WA
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Infrastructure Foundation** - Provision DynamoDB tables, Cognito User Pool, and IAM permissions — zero application code changes (completed 2026-02-28)
-- [ ] **Phase 2: Storage Migration** - Replace file-based session storage with DynamoDB; deploy with auth bypassed to validate in isolation
+- [x] **Phase 2: Storage Migration** - Replace file-based session storage with DynamoDB; deploy with auth bypassed to validate in isolation (completed 2026-02-28)
 - [ ] **Phase 3: Backend Auth and API Security** - JWT middleware, CORS lockdown, rate limiting, input validation, and audit trail on the FastAPI backend
 - [ ] **Phase 4: Frontend Auth Integration** - Amplify v6 login/logout UI, token attachment on all API requests, and role-based access enforcement
 - [ ] **Phase 5: Data Migration and Audit Validation** - Run one-time file-to-DynamoDB migration, flip AUTH_REQUIRED=true, and smoke-test end-to-end
@@ -51,7 +51,7 @@ Plans:
 Plans:
 - [x] 02-01-PLAN.md — Implement DynamoDBReviewStorage class with float-to-Decimal converters, S3 offload, and all ABC methods (Wave 1) (completed 2026-02-28)
 - [x] 02-02-PLAN.md — Wire storage factory for 'dynamodb', remove dead deployment.entrypoint code from server.py, connect REVIEW_STORAGE_TYPE env var (Wave 2) (completed 2026-02-28)
-- [ ] 02-03-PLAN.md — Build idempotent migration script for existing file-based sessions and pipeline results (Wave 3)
+- [x] 02-03-PLAN.md — Build idempotent migration script for existing file-based sessions and pipeline results (Wave 3) (completed 2026-02-28)
 
 ### Phase 3: Backend Auth and API Security
 **Goal**: Every FastAPI endpoint is protected by Cognito JWT authentication, the API accepts requests only from the frontend domain, and all inputs are validated and rate-limited
@@ -108,7 +108,7 @@ Phases execute in strict dependency order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Infrastructure Foundation | 3/3 | Complete   | 2026-02-28 |
-| 2. Storage Migration | 2/3 | In progress | - |
+| 2. Storage Migration | 3/3 | Complete   | 2026-02-28 |
 | 3. Backend Auth and API Security | 0/3 | Not started | - |
 | 4. Frontend Auth Integration | 0/2 | Not started | - |
 | 5. Data Migration and Audit Validation | 0/2 | Not started | - |
