@@ -10,13 +10,13 @@ See: .planning/PROJECT.md (updated 2026-02-27)
 ## Current Position
 
 Phase: 3 of 5 (Backend Auth and API Security) — IN PROGRESS
-Plan: 1 of 3 complete
-**Current Plan:** 03-02 (next)
+Plan: 2 of 3 complete
+**Current Plan:** 03-03 (next)
 **Total Plans in Phase:** 3
-Status: Plan 03-01 complete — JWT auth middleware and Pydantic validation wired
-Last activity: 2026-02-28 — Completed 03-01 (PyJWT RS256 Cognito JWT middleware, wafr/auth subpackage, all 23 endpoints protected, max_length Pydantic constraints)
+Status: Plan 03-02 complete — CORS lockdown (WAFR_CORS_ORIGINS), rate limiting (slowapi 8 endpoints)
+Last activity: 2026-02-28 — Completed 03-02 (CORS wildcard replaced, SlowAPIMiddleware + CORSMiddleware correct order, 8 rate-limit decorators)
 
-Progress: [█████░░░░░] 36%
+Progress: [██████░░░░] 42%
 
 ## Performance Metrics
 
@@ -43,6 +43,7 @@ Progress: [█████░░░░░] 36%
 | Phase 02-storage-migration P02 | 8 | 2 tasks | 2 files |
 | Phase 02-storage-migration P03 | 4 | 1 task | 1 file |
 | Phase 03-backend-auth-and-api-security P01 | 6 | 2 tasks | 4 files |
+| Phase 03-backend-auth-and-api-security P02 | 5 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -80,6 +81,9 @@ Recent decisions affecting current work:
 - [Phase 03-backend-auth-and-api-security]: HTTPBearer(auto_error=False) used — prevents default 403 on missing header; manual 401 raised per spec
 - [Phase 03-backend-auth-and-api-security]: Lazy PyJWKClient init via _get_jwks_client() helper — prevents KeyError at import time when Cognito env vars not set
 - [Phase 03-backend-auth-and-api-security]: req: Request added proactively to all protected endpoints — slowapi (Plan 03-03) readiness without a second server.py edit
+- [Phase 03-backend-auth-and-api-security]: SlowAPIMiddleware registered before CORSMiddleware (CORS outermost) so 401/429 errors carry CORS headers
+- [Phase 03-backend-auth-and-api-security]: Pydantic body params renamed to 'body'; Starlette Request named 'request' — slowapi requires parameter named exactly 'request'
+- [Phase 03-backend-auth-and-api-security]: WAFR_CORS_ORIGINS env var with comma-separated origins — explicit list required when allow_credentials=True (no wildcard)
 
 ### Pending Todos
 
@@ -94,5 +98,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-28
-Stopped at: Completed 03-01-PLAN.md (PyJWT RS256 Cognito JWT middleware via wafr/auth subpackage, verify_token/require_team_role deps on all 23 endpoints, Pydantic max_length constraints on all request models).
+Stopped at: Completed 03-02-PLAN.md (CORS lockdown via WAFR_CORS_ORIGINS env var, explicit origins + allow_credentials, SlowAPIMiddleware + CORSMiddleware in correct stack order, 8 tiered rate-limit decorators on write endpoints).
 Resume file: None

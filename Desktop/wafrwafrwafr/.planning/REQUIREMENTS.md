@@ -23,8 +23,8 @@ Requirements for this milestone. Each maps to roadmap phases.
 
 ### Security
 
-- [ ] **SECR-01**: CORS is locked down to only allow requests from the frontend App Runner domain
-- [ ] **SECR-02**: Rate limiting is enforced per-user/IP on all API endpoints via slowapi
+- [x] **SECR-01**: CORS is locked down to only allow requests from the frontend App Runner domain
+- [x] **SECR-02**: Rate limiting is enforced per-user/IP on all API endpoints via slowapi
 - [x] **SECR-03**: All API inputs are validated with Pydantic models including transcript size limits
 - [ ] **SECR-04**: Audit trail logs who ran what assessment, when, with what transcript
 
@@ -81,8 +81,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AUTH-02 | Phase 3 | Complete |
 | AUTH-03 | Phase 4 | Pending |
 | AUTH-04 | Phase 4 | Pending |
-| SECR-01 | Phase 3 | Pending |
-| SECR-02 | Phase 3 | Pending |
+| SECR-01 | Phase 3 | Complete |
+| SECR-02 | Phase 3 | Complete |
 | SECR-03 | Phase 3 | Complete |
 | SECR-04 | Phase 3 | Pending |
 | OPER-01 | Phase 5 | Pending |
