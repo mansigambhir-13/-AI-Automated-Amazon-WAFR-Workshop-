@@ -46,12 +46,12 @@ Plans:
   3. Human review decisions (approve/reject/modify per question) written via the HRI are retrievable from DynamoDB after a service restart
   4. User profile records exist in DynamoDB and are read correctly by the application
   5. Setting `REVIEW_STORAGE_TYPE=dynamodb` in the App Runner environment switches storage; the previous file-based path still works with `REVIEW_STORAGE_TYPE=file` and `AUTH_REQUIRED=false` keeps the API unauthenticated during this phase
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: Implement DynamoDBReviewStorage class with float-to-Decimal converter and S3 offload for large items
-- [ ] 02-02: Wire storage factory, fix PYTHONPATH, deploy and validate DynamoDB persistence
-- [ ] 02-03: Build and test migration script for existing file sessions
+- [ ] 02-01-PLAN.md — Implement DynamoDBReviewStorage class with float-to-Decimal converters, S3 offload, and all ABC methods (Wave 1)
+- [ ] 02-02-PLAN.md — Wire storage factory for 'dynamodb', remove dead deployment.entrypoint code from server.py, connect REVIEW_STORAGE_TYPE env var (Wave 2)
+- [ ] 02-03-PLAN.md — Build idempotent migration script for existing file-based sessions and pipeline results (Wave 3)
 
 ### Phase 3: Backend Auth and API Security
 **Goal**: Every FastAPI endpoint is protected by Cognito JWT authentication, the API accepts requests only from the frontend domain, and all inputs are validated and rate-limited
