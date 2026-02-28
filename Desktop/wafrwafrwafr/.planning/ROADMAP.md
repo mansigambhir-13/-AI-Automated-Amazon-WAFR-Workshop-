@@ -63,12 +63,12 @@ Plans:
   3. Sending more than 10 requests per minute to `POST /api/wafr/run` from a single IP returns 429 Too Many Requests on the excess requests
   4. A transcript body exceeding 500,000 characters is rejected with a 422 Validation Error before reaching the AI pipeline
   5. After a team user runs an assessment, an audit log entry exists in `wafr-audit-log` with user ID, session ID, action type, and timestamp
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: Implement JWT middleware with PyJWT JWKS caching, RS256 algorithm enforcement, and team/client role guards
-- [ ] 03-02: Add CORS lockdown, slowapi rate limiting, and Pydantic input validation
-- [ ] 03-03: Implement audit trail writes at session create, run, review decision, and report generation events
+- [ ] 03-01-PLAN.md — Create wafr/auth/ subpackage with JWT middleware, wire Depends(verify_token) on all endpoints, add Pydantic input validation (Wave 1)
+- [ ] 03-02-PLAN.md — Replace CORS wildcard with env-var origins, add slowapi rate limiting with tiered limits (Wave 2)
+- [ ] 03-03-PLAN.md — Implement audit trail ASGI middleware and per-endpoint body logging to wafr-audit-log DynamoDB table (Wave 3)
 
 ### Phase 4: Frontend Auth Integration
 **Goal**: Users log in and log out through the Next.js frontend using Cognito credentials, and every API request automatically carries a valid access token
