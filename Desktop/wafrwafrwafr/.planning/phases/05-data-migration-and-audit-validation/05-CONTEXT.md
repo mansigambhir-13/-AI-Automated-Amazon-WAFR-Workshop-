@@ -15,7 +15,7 @@ Run the one-time file-to-DynamoDB migration, create Cognito test users, deploy b
 
 ### Migration Execution
 - Existing file-based sessions need to be migrated to DynamoDB
-- Migration script runs inside the App Runner container (not from local machine)
+- Migration runs locally via `docker run` with operator's AWS credentials (Pattern B) — session files are on the local machine, not in the Docker image, and embedding them in ECR would be a security risk
 - Rollback plan: DynamoDB PITR (Point-in-Time Recovery) to restore pre-migration state if something goes wrong
 - Claude's discretion on post-migration validation approach (count comparison, spot-check, or both)
 
@@ -36,7 +36,7 @@ Run the one-time file-to-DynamoDB migration, create Cognito test users, deploy b
 - Deploy frontend and backend simultaneously (both App Runner services updated at the same time)
 - Docker images built and pushed via CLI commands (Claude provides exact commands, operator executes)
 - ECR container registry already exists — push images there
-- Migration runs after deploy — new code has DynamoDB support, migration writes to DynamoDB from within the running container
+- Migration runs locally before or in parallel with deploy — Pattern B runs independently of App Runner deployment timing
 
 ### Claude's Discretion
 - Post-migration validation depth (count comparison vs spot-check vs both)
