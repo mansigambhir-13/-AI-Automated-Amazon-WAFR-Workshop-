@@ -10,36 +10,37 @@ See: .planning/PROJECT.md (updated 2026-02-27)
 ## Current Position
 
 Phase: 2 of 5 (Storage Migration)
-Plan: 2 of 3 in current phase
-**Current Plan:** 02-02
+Plan: 3 of 3 in current phase
+**Current Plan:** 02-03
 **Total Plans in Phase:** 3
 Status: Ready to execute
-Last activity: 2026-02-28 — Completed 02-01 (DynamoDBReviewStorage implemented with all ABC methods, float-to-Decimal converters, S3 offload for large items and transcripts)
+Last activity: 2026-02-28 — Completed 02-02 (dead deployment.entrypoint blocks removed from server.py, REVIEW_STORAGE_TYPE env var confirmed, pipeline results and transcripts routed to DynamoDB storage)
 
-Progress: [██░░░░░░░░] 14%
+Progress: [███░░░░░░░] 21%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
+- Total plans completed: 3
 - Average duration: 6 min
-- Total execution time: 0.2 hours
+- Total execution time: 0.3 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-infrastructure-foundation | 1 | 7 min | 7 min |
-| 02-storage-migration | 1 | 5 min | 5 min |
+| 02-storage-migration | 2 | 13 min | 6.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (7 min), 02-01 (5 min)
+- Last 5 plans: 01-01 (7 min), 02-01 (5 min), 02-02 (8 min)
 - Trend: stable
 
 *Updated after each plan completion*
 | Phase 01-infrastructure-foundation P02 | 2 | 2 tasks | 2 files |
 | Phase 01-infrastructure-foundation P01-03 | 10 | 2 tasks | 5 files |
 | Phase 02-storage-migration P01 | 5 | 1 task | 1 file |
+| Phase 02-storage-migration P02 | 8 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -67,6 +68,9 @@ Recent decisions affecting current work:
 - [02-01]: Pipeline results stored as JSON string attribute (not DynamoDB map) — avoids Decimal conversion on deeply nested 11-step pipeline dicts; string up to 400KB satisfies the constraint
 - [02-01]: Per-item rows pattern for wafr-review-sessions — each review item as separate DynamoDB row (item_id=<review_id>), enables individual updates without rewriting whole session
 - [02-01]: create_review_storage() extended with 'dynamodb' branch reading WAFR_DYNAMO_* env vars; existing 'memory' and 'file' branches untouched
+- [02-02]: **kwargs added to create_review_storage() for forward-compatibility — callers may pass extra keyword args without error if signature evolves
+- [02-02]: Dead deployment.entrypoint blocks fully removed from server.py (three blocks); all DynamoDB access now routes through wafr/storage/DynamoDBReviewStorage
+- [02-02]: hasattr guards used for save_pipeline_results and save_transcript in server.py — method presence signals DynamoDB backend; file/memory backends silently skip
 
 ### Pending Todos
 
@@ -81,5 +85,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-28
-Stopped at: Completed 02-01-PLAN.md (DynamoDBReviewStorage implemented with all 7 ABC methods, float-to-Decimal converters, S3 offload for items >300KB and always for transcripts, sync_user_profile, factory updated)
+Stopped at: Completed 02-02-PLAN.md (dead deployment.entrypoint blocks removed from server.py, factory **kwargs added, pipeline results and transcripts routed to DynamoDB storage via hasattr guards)
 Resume file: None
