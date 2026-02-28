@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-02-27)
 
 **Core value:** Every WAFR assessment session is durably stored, only accessible to authorized users, and the backend API is protected from unauthorized access and abuse.
-**Current focus:** Phase 3 complete — ready for Phase 4
+**Current focus:** Phase 4 in progress — Plan 1 of 1 complete
 
 ## Current Position
 
-Phase: 3 of 5 (Backend Auth and API Security) — COMPLETE
-Plan: 3 of 3 complete
-**Total Plans in Phase:** 3
-Status: Phase 3 verified (5/5 must-haves). JWT auth, CORS lockdown, rate limiting, input validation, audit trail all wired.
-Last activity: 2026-02-28 — Phase 3 verification passed, marked complete
+Phase: 4 of 5 (Frontend Auth Integration) — IN PROGRESS
+Plan: 1 of 1 complete
+**Total Plans in Phase:** 1
+Status: Phase 4 Plan 1 complete. Amplify v6 installed, Cognito login gate wired, Bearer token on all API/SSE calls, auth-aware downloads.
+Last activity: 2026-02-28 — Phase 4 Plan 1 executed and committed
 
-Progress: [██████░░░░] 60%
+Progress: [████████░░] 80%
 
 ## Performance Metrics
 
@@ -44,6 +44,7 @@ Progress: [██████░░░░] 60%
 | Phase 03-backend-auth-and-api-security P01 | 6 | 2 tasks | 4 files |
 | Phase 03-backend-auth-and-api-security P02 | 5 | 2 tasks | 4 files |
 | Phase 03-backend-auth-and-api-security P03 | 3 | 2 tasks | 3 files |
+| Phase 04-frontend-auth-integration P01 | 8 | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,11 @@ Recent decisions affecting current work:
 - [Phase 03-backend-auth-and-api-security]: asyncio.get_running_loop() used in AuditMiddleware (not get_event_loop()) — get_event_loop() is deprecated in Python 3.10+; RuntimeError fallback handles non-async test contexts
 - [Phase 03-backend-auth-and-api-security]: AuditMiddleware is pure-ASGI class (not BaseHTTPMiddleware) — registered as innermost middleware; stack is now: AuditMiddleware -> SlowAPIMiddleware -> CORSMiddleware
 - [Phase 03-backend-auth-and-api-security]: Transcript excluded from audit body on /run and /start (transcript_length field instead) — avoids DynamoDB 400KB item limit for 500K char transcripts
+- [04-01]: Amplify.configure() at module scope in amplify-provider.tsx — avoids re-configuration on re-renders; Next.js only loads the module once per tab session
+- [04-01]: cognitoUserPoolsTokenProvider.setKeyValueStorage(sessionStorage) — clears tokens on tab close, satisfying session-not-persisting requirement
+- [04-01]: authHeaders() exported from api.ts — single source of truth for Bearer token injection, reused by sse-client.ts and backend-api.ts
+- [04-01]: Auth-aware downloadReport/downloadAwsReport/downloadResults functions added — direct URL hrefs cannot carry Authorization headers; blob-download pattern required
+- [04-01]: Toaster kept outside AmplifyProvider in layout.tsx — toast notifications must work on the login screen before authentication
 
 ### Pending Todos
 
@@ -94,12 +100,12 @@ None yet.
 
 ### Blockers/Concerns
 
-- [Phase 4]: Amplify v6 documents Next.js support up to 15.x; project uses 16.1.6 — must verify compatibility before writing any frontend auth code. Fallback: amazon-cognito-identity-js directly.
-- [Phase 4]: NEXT_PUBLIC_* variables are baked at build time in Next.js but App Runner injects at runtime — must verify env vars are available during App Runner build step.
+- [Phase 4 resolved]: Amplify v6 installed without errors on Next.js 16.1.6 and TypeScript compiles cleanly — compatibility concern resolved in practice.
+- [Phase 4 resolved]: NEXT_PUBLIC_* variables wired via Dockerfile ARG/ENV — baked at build time when --build-arg passed to docker build.
 - [02-01 resolved]: Session JSON file sizes confirmed in research — 77-147KB after stripping report_base64; S3 offload for transcripts is locked decision but not size-driven for current data.
 
 ## Session Continuity
 
 Last session: 2026-02-28
-Stopped at: Phase 3 complete (all 3 plans executed + verified 5/5). Next: Phase 4 — Frontend Auth Integration.
+Stopped at: Phase 4, Plan 1 complete (04-01-PLAN.md executed). Phase 4 complete — ready for Phase 5 deployment.
 Resume file: None
