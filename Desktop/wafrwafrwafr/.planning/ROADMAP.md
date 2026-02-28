@@ -29,12 +29,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Cognito User Pool exists with a public App Client (no client secret) and two groups: `WafrTeam` and `WafrClients`
   3. `WafrAppRunnerInstanceRole` IAM policy allows DynamoDB CRUD scoped to `arn:aws:dynamodb:us-east-1:842387632939:table/wafr-*` and Cognito read operations
   4. Backend App Runner service environment variables include Cognito User Pool ID, App Client ID, table names, and `AUTH_REQUIRED=false`
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: Provision DynamoDB tables with schema and GSIs
-- [ ] 01-02: Create Cognito User Pool, App Client, and user groups
-- [ ] 01-03: Update IAM role and backend App Runner environment variables
+- [ ] 01-01-PLAN.md — Provision four DynamoDB tables with key schemas, GSIs, TTL, and PITR (Wave 1)
+- [ ] 01-02-PLAN.md — Create Cognito User Pool, public App Client, and WafrTeam/WafrClients groups (Wave 1)
+- [ ] 01-03-PLAN.md — Extend IAM policy, store Cognito values in Secrets Manager, update App Runner env vars (Wave 2)
 
 ### Phase 2: Storage Migration
 **Goal**: Assessment sessions, pipeline results, and review decisions survive container restarts by being stored in DynamoDB instead of local files
