@@ -174,15 +174,18 @@ function mapStepToPhase(step: string): number {
     // Phase 3: Generating Insights
     'auto_populate': 3,
     'prompt_generator': 3,
+    'gap_prompts': 3,
     'scoring': 3,
     // Phase 4: Identifying Gaps / WA Tool Integration
     'report': 4,
     'wa_tool': 4,
     'wa_tool_workload': 4,
+    'wa_workload': 4,
     'wa_tool_populate': 4,
     'wa_tool_answers': 4,
     'wa_tool_milestone': 4,
     'wa_tool_hri': 4,
+    'hri_validation': 4,
     'wa_tool_report': 4,
     'wa_tool_upload': 4,
     'wa_tool_complete': 4,
@@ -236,7 +239,6 @@ export default function ProgressPage() {
         const stateData = await backend.getSessionState(sessionId);
         if (cancelled) return;
 
-        setProgress(stateData.progress);
         const rawPhase = mapStepToPhase(stateData.step);
         // Only advance forward, never backward (-1 means unknown step, skip)
         if (rawPhase >= 0 && rawPhase > maxPhaseRef.current) {
@@ -244,6 +246,12 @@ export default function ProgressPage() {
         }
         const phase = maxPhaseRef.current;
         setActiveStep(phase);
+
+        // Cap progress so the circle never gets ahead of the stepper.
+        // 100% only shows when the session is truly finalized (phase 5).
+        const PHASE_PROGRESS_CAP = [5, 25, 45, 65, 95, 100];
+        const cappedProgress = Math.min(stateData.progress, PHASE_PROGRESS_CAP[phase] ?? 95);
+        setProgress(cappedProgress);
 
         // Add log event only when the step actually changes
         if (stateData.step && stateData.step !== lastStepRef.current) {
