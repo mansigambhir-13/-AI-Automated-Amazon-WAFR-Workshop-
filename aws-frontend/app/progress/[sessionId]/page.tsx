@@ -164,14 +164,30 @@ function ProgressRing({ progress }: { progress: number }) {
 /* ------------------------------------------------------------------ */
 function mapStepToPhase(step: string): number {
   const stepMap: Record<string, number> = {
+    // Phase 1: Analyzing Transcript
     'understanding': 1,
-    'answer_synthesis': 2,
+    'mapping': 1,
+    // Phase 2: Evaluating Architecture
     'confidence': 2,
+    'gap_detection': 2,
+    'answer_synthesis': 2,
+    // Phase 3: Generating Insights
+    'auto_populate': 3,
+    'prompt_generator': 3,
     'scoring': 3,
-    'gap_detection': 4,
-    'report': 5,
+    // Phase 4: Identifying Gaps / WA Tool Integration
+    'report': 4,
+    'wa_tool': 4,
+    'wa_tool_workload': 4,
+    'wa_tool_populate': 4,
+    'wa_tool_answers': 4,
+    'wa_tool_milestone': 4,
+    'wa_tool_hri': 4,
+    'wa_tool_report': 4,
+    'wa_tool_upload': 4,
+    'wa_tool_complete': 4,
   };
-  return stepMap[step] ?? 0;
+  return stepMap[step] ?? -1; // -1 = unknown, caller should ignore
 }
 
 /* ------------------------------------------------------------------ */
@@ -187,6 +203,8 @@ export default function ProgressPage() {
   const [events, setEvents] = useState<LogEvent[]>([]);
   const [startedAt] = useState(() => new Date().toISOString());
   const [isComplete, setIsComplete] = useState(false);
+  const maxPhaseRef = useRef(0); // never let the stepper go backward
+  const lastStepRef = useRef(""); // deduplicate log events
 
   const logContainerRef = useRef<HTMLDivElement>(null);
 
@@ -219,11 +237,17 @@ export default function ProgressPage() {
         if (cancelled) return;
 
         setProgress(stateData.progress);
-        const phase = mapStepToPhase(stateData.step);
+        const rawPhase = mapStepToPhase(stateData.step);
+        // Only advance forward, never backward (-1 means unknown step, skip)
+        if (rawPhase >= 0 && rawPhase > maxPhaseRef.current) {
+          maxPhaseRef.current = rawPhase;
+        }
+        const phase = maxPhaseRef.current;
         setActiveStep(phase);
 
-        // Add log event for step changes
-        if (stateData.step) {
+        // Add log event only when the step actually changes
+        if (stateData.step && stateData.step !== lastStepRef.current) {
+          lastStepRef.current = stateData.step;
           addEvent(`Processing: ${stateData.step.replace(/_/g, ' ')}`, PHASES[phase]);
         }
 

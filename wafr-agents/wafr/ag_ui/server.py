@@ -980,7 +980,7 @@ async def get_session_details(
         state = session_states[session_id]
         session_data.update({
             "found": True,
-            "state": state.to_dict(),
+            "state": state.to_snapshot(),
             "source": "memory",
         })
     
