@@ -1085,7 +1085,6 @@ async def submit_review_decision(
                 state.review.approved_count = approved
                 state.review.modified_count = modified
                 state.review.rejected_count = rejected
-                state.review.total_reviewed = approved + modified + rejected
 
         # Create decision data for SSE event
         decision_data = ReviewDecisionData(
@@ -1181,7 +1180,6 @@ async def batch_approve(
             state.review.approved_count = approved_total
             state.review.modified_count = modified
             state.review.rejected_count = rejected
-            state.review.total_reviewed = approved_total + modified + rejected
 
         # Emit event if session has emitter
         if session_id in active_sessions:
@@ -1306,7 +1304,6 @@ async def finalize_review_session(
             state.review.approved_count = approved
             state.review.modified_count = modified
             state.review.rejected_count = rejected
-            state.review.total_items = total_items
 
         return {
             "status": "success",
