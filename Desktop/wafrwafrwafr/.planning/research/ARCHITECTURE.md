@@ -72,10 +72,10 @@ The key constraint is: existing App Runner deployment stays intact. No migration
 
 ### Authentication Flow
 
-**Pattern: JWT Bearer, verified at middleware layer.**
 
-Do NOT use API Gateway. App Runner stays as-is. FastAPI adds a `CognitoJWTMiddleware` (or FastAPI dependency) that:
-1. Reads `Authorization: Bearer <token>` header
+
+
+
 2. Fetches JWKS from `https://cognito-idp.us-east-1.amazonaws.com/<user_pool_id>/.well-known/jwks.json` (cache this — key rotates rarely)
 3. Verifies signature with `python-jose` or `PyJWT`
 4. Checks: `exp` (not expired), `iss` (matches user pool), `token_use` = `access`

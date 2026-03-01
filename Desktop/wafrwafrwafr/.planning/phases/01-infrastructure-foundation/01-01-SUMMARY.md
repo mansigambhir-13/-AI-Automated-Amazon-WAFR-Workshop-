@@ -73,7 +73,7 @@ Each task was committed atomically:
 1. **Task 1: Create wafr-sessions and wafr-review-sessions DynamoDB tables** - `ccde629` (feat)
 2. **Task 2: Create wafr-users and wafr-audit-log DynamoDB tables** - `c138ea4` (feat)
 
-**Plan metadata:** `[pending]` (docs: complete plan — committed with STATE.md, ROADMAP.md)
+**Plan metadata:** `1d74c4c` (docs: complete plan — committed with STATE.md, ROADMAP.md)
 
 ## Files Created/Modified
 
