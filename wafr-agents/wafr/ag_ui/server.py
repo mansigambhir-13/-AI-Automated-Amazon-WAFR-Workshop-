@@ -274,6 +274,178 @@ def _ensure_session_results(session_id: str) -> bool:
     return False
 
 
+# ---------------------------------------------------------------------------
+# Validated-answers helpers (wire HITL review into data & report)
+# ---------------------------------------------------------------------------
+
+def _merge_validated_answers_into_results(session_id: str, validated_answers: List[Dict]) -> bool:
+    """
+    Overlay human-reviewed answers onto session_results so every data endpoint
+    (get_questions, get_pillars, download_results) returns post-review content.
+
+    Returns True if the merge changed anything.
+    """
+    if not validated_answers:
+        return False
+
+    _ensure_session_results(session_id)
+    if session_id not in session_results:
+        logger.warning(f"Cannot merge validated answers: no session_results for {session_id}")
+        return False
+
+    results = session_results[session_id]
+    steps = results.setdefault("steps", {})
+
+    # Build lookup: question_id → validated answer
+    validated_map = {va["question_id"]: va for va in validated_answers}
+
+    changed = False
+
+    # Patch auto_populate.all_answers (primary source for get_questions)
+    all_answers = steps.get("auto_populate", {}).get("all_answers", [])
+    for ans in all_answers:
+        qid = ans.get("question_id", "")
+        if qid in validated_map:
+            va = validated_map[qid]
+            ans["answer_content"] = va["answer_content"]
+            ans["synthesized_answer"] = va["answer_content"]
+            ans["source"] = va["source"]
+            ans["confidence"] = va["confidence"]
+            ans["review_status"] = va["source"]  # AI_VALIDATED / AI_MODIFIED
+            changed = True
+
+    # Patch answer_synthesis.synthesized_answers (fallback source)
+    synth_answers = steps.get("answer_synthesis", {}).get("synthesized_answers", [])
+    for ans in synth_answers:
+        qid = ans.get("question_id", "")
+        if qid in validated_map:
+            va = validated_map[qid]
+            ans["synthesized_answer"] = va["answer_content"]
+            ans["answer_content"] = va["answer_content"]
+            ans["source"] = va["source"]
+            ans["confidence"] = va["confidence"]
+            changed = True
+
+    # Patch confidence.validated_answers
+    conf_answers = steps.get("confidence", {}).get("validated_answers", [])
+    for ans in conf_answers:
+        qid = ans.get("question_id", "")
+        if qid in validated_map:
+            va = validated_map[qid]
+            ans["answer_content"] = va["answer_content"]
+            ans["source"] = va["source"]
+            ans["confidence"] = va["confidence"]
+            changed = True
+
+    # Mark results as validated
+    if changed:
+        results["review_applied"] = True
+        results["review_applied_at"] = datetime.utcnow().isoformat()
+        results["review_stats"] = {
+            "total_validated": len(validated_answers),
+            "modified": sum(1 for v in validated_answers if v["source"] == "AI_MODIFIED"),
+        }
+        # Persist updated results
+        _save_pipeline_results(session_id, results)
+        try:
+            review_orch = get_review_orchestrator()
+            if review_orch and hasattr(review_orch.storage, 'save_pipeline_results'):
+                review_orch.storage.save_pipeline_results(session_id, results)
+        except Exception as e:
+            logger.warning(f"Failed to persist reviewed results to DynamoDB: {e}")
+        logger.info(f"Merged {len(validated_answers)} validated answers into session_results for {session_id}")
+
+    return changed
+
+
+async def _regenerate_wa_report(session_id: str, validated_answers: List[Dict]) -> None:
+    """
+    Background task: push reviewed answer notes into the AWS WA Tool workload
+    and regenerate the official PDF report so it reflects human review.
+    """
+    import asyncio
+
+    _ensure_session_results(session_id)
+    results = session_results.get(session_id)
+    if not results:
+        logger.warning(f"[WA-regen] No results for {session_id}, skipping report regen")
+        return
+
+    wa_step = results.get("steps", {}).get("wa_workload", {})
+    workload_id = wa_step.get("workload_id") if isinstance(wa_step, dict) else None
+    if not workload_id:
+        logger.info(f"[WA-regen] No workload_id for {session_id}, skipping WA report regen")
+        return
+
+    try:
+        from wafr.agents.wa_tool_agent import WAToolAgent
+
+        wa_agent = WAToolAgent()
+
+        # Update notes for each validated answer in WA Tool
+        modified_answers = [va for va in validated_answers if va["source"] == "AI_MODIFIED"]
+        if modified_answers:
+            logger.info(f"[WA-regen] Updating {len(modified_answers)} modified answers in WA Tool workload {workload_id}")
+            for va in modified_answers:
+                qid = va["question_id"]
+                try:
+                    # Get current answer to preserve selected_choices
+                    current = wa_agent.wa_client.get_answer(
+                        workload_id=workload_id,
+                        lens_alias="wellarchitected",
+                        question_id=qid,
+                    )
+                    current_answer = current.get("Answer", {})
+                    selected = current_answer.get("SelectedChoices", [])
+                    if not selected:
+                        # Keep existing choices; cannot update without them
+                        logger.debug(f"[WA-regen] No selected choices for {qid}, updating notes only via existing choices")
+                        selected = current_answer.get("ChoiceAnswers", [])
+                        selected = [ca.get("ChoiceId") for ca in selected if ca.get("Status") == "SELECTED"]
+
+                    if selected:
+                        wa_agent.wa_client.update_answer(
+                            workload_id=workload_id,
+                            lens_alias="wellarchitected",
+                            question_id=qid,
+                            selected_choices=selected,
+                            notes=f"[Human-Reviewed] {va['answer_content'][:2048]}",
+                        )
+                        logger.info(f"[WA-regen] Updated WA Tool answer for {qid}")
+                    else:
+                        logger.warning(f"[WA-regen] Skipping {qid}: no selected choices found")
+                except Exception as e:
+                    logger.warning(f"[WA-regen] Failed to update WA answer for {qid}: {e}")
+
+        # Regenerate report (create new milestone + download PDF)
+        logger.info(f"[WA-regen] Regenerating report for workload {workload_id}")
+        save_path = f"/tmp/reports/wafr_aws_report_{session_id}_reviewed.pdf"
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+
+        review_result = wa_agent.create_milestone_and_review(
+            workload_id=workload_id,
+            milestone_name=f"Post_Review_{session_id[:8]}",
+            save_report_path=save_path,
+        )
+
+        if os.path.exists(save_path):
+            # Update session_results with new report path
+            if isinstance(wa_step, dict):
+                wa_step["report_file"] = save_path
+                wa_step["report_reviewed"] = True
+            _save_pipeline_results(session_id, results)
+            # Update in-memory state
+            if session_id in session_states:
+                session_states[session_id].report.file_path = save_path
+                session_states[session_id].report.generated = True
+            logger.info(f"[WA-regen] Regenerated reviewed report at {save_path}")
+        else:
+            logger.warning(f"[WA-regen] Report file not created at {save_path}")
+
+    except Exception as e:
+        logger.error(f"[WA-regen] Failed to regenerate WA report for {session_id}: {e}", exc_info=True)
+
+
 # Initialize ReviewOrchestrator with storage (singleton)
 _review_orchestrator = None
 
@@ -1305,6 +1477,22 @@ async def finalize_review_session(
             state.review.modified_count = modified
             state.review.rejected_count = rejected
 
+        # ------------------------------------------------------------------
+        # CRITICAL: Merge validated answers into session_results so every
+        # data endpoint (questions, pillars, report download) reflects
+        # the human-reviewed content instead of raw pipeline output.
+        # ------------------------------------------------------------------
+        validated_answers = review_orch.get_validated_answers(session_id)
+        answers_merged = False
+        if validated_answers:
+            answers_merged = _merge_validated_answers_into_results(session_id, validated_answers)
+            logger.info(f"Validated answers merged: {answers_merged} ({len(validated_answers)} answers)")
+
+            # Kick off background WA Tool report regeneration (best-effort)
+            if modified > 0:
+                background_tasks.add_task(_regenerate_wa_report, session_id, validated_answers)
+                logger.info(f"Queued WA report regeneration for {session_id} ({modified} modified answers)")
+
         return {
             "status": "success",
             "session_id": session_id,
@@ -1315,6 +1503,8 @@ async def finalize_review_session(
                 "modified": modified,
                 "rejected": rejected,
             },
+            "review_applied": answers_merged,
+            "report_regenerating": modified > 0,
         }
         
     except HTTPException:
