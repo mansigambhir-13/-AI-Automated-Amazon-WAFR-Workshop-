@@ -358,13 +358,103 @@ def _merge_validated_answers_into_results(session_id: str, validated_answers: Li
     return changed
 
 
-async def _regenerate_wa_report(session_id: str, validated_answers: List[Dict]) -> None:
+def _remap_choices_for_modified_answer(
+    wa_agent,
+    workload_id: str,
+    question_id: str,
+    modified_answer: str,
+    question_title: str,
+) -> Optional[List[str]]:
     """
-    Background task: push reviewed answer notes into the AWS WA Tool workload
-    and regenerate the official PDF report so it reflects human review.
+    Use AI to re-select best-practice choices based on the human-modified answer.
+    Returns new selected_choice_ids or None on failure.
     """
-    import asyncio
+    try:
+        # Get full question details (choices) from WA Tool
+        answer_detail = wa_agent.wa_client.get_answer(
+            workload_id=workload_id,
+            lens_alias="wellarchitected",
+            question_id=question_id,
+        )
+        answer_data = answer_detail.get("Answer", {})
+        choices = answer_data.get("Choices", [])
+        if not choices:
+            return None
 
+        # Format choices for AI prompt
+        choices_text = "\n".join([
+            f"- {c.get('ChoiceId', '')}: {c.get('Title', '')}"
+            for c in choices
+        ])
+
+        prompt = f"""You are an AWS Well-Architected Framework expert. A human reviewer has modified the answer to a WAFR question. Based on the modified answer, determine which best practice choices are now met.
+
+QUESTION: {question_title}
+QUESTION ID: {question_id}
+
+AVAILABLE CHOICES:
+{choices_text}
+
+HUMAN-REVIEWED ANSWER:
+{modified_answer[:3000]}
+
+TASK: Select the choices that are SUPPORTED by the human-reviewed answer above.
+- Only select choices that the answer provides evidence for
+- Be honest: if the answer doesn't support a choice, don't select it
+- It's OK to select fewer choices if that's what the evidence supports
+
+CRITICAL JSON FORMAT: Return ONLY a valid JSON object, no markdown, no explanation.
+{{"selected_choice_ids": ["choice_id_1", "choice_id_2"], "reasoning": "brief explanation"}}
+"""
+        import boto3
+        bedrock = boto3.client("bedrock-runtime", region_name="us-east-1")
+        response = bedrock.invoke_model(
+            modelId="us.anthropic.claude-sonnet-4-20250514",
+            body=json.dumps({
+                "anthropic_version": "bedrock-2023-05-31",
+                "max_tokens": 1024,
+                "messages": [{"role": "user", "content": prompt}],
+            }),
+        )
+        import json as _json
+        resp_body = _json.loads(response["body"].read())
+        text = resp_body.get("content", [{}])[0].get("text", "")
+
+        # Parse JSON from response
+        # Strip markdown fences if present
+        text = text.strip()
+        if text.startswith("```"):
+            text = text.split("\n", 1)[1] if "\n" in text else text[3:]
+        if text.endswith("```"):
+            text = text.rsplit("```", 1)[0]
+        text = text.strip()
+
+        parsed = _json.loads(text)
+        new_choices = parsed.get("selected_choice_ids", [])
+        # Validate choice IDs exist
+        valid_ids = {c.get("ChoiceId") for c in choices}
+        new_choices = [cid for cid in new_choices if cid in valid_ids]
+        if new_choices:
+            logger.info(f"[WA-regen] AI re-selected {len(new_choices)} choices for {question_id}")
+            return new_choices
+        return None
+    except Exception as e:
+        logger.warning(f"[WA-regen] Choice re-mapping failed for {question_id}: {e}")
+        return None
+
+
+async def _regenerate_wa_report(
+    session_id: str,
+    validated_answers: List[Dict],
+    rejected_question_ids: Optional[List[str]] = None,
+) -> None:
+    """
+    Background task: re-select best-practice choices in the AWS WA Tool
+    based on human-reviewed answers, then regenerate the official PDF report.
+
+    For MODIFIED answers: AI re-analyzes which choices are met based on new text.
+    For REJECTED answers: Notes are updated to flag the answer for manual review.
+    """
     _ensure_session_results(session_id)
     results = session_results.get(session_id)
     if not results:
@@ -381,66 +471,110 @@ async def _regenerate_wa_report(session_id: str, validated_answers: List[Dict]) 
         from wafr.agents.wa_tool_agent import WAToolAgent
 
         wa_agent = WAToolAgent()
+        updated_count = 0
 
-        # Update notes for each validated answer in WA Tool
+        # ── Handle MODIFIED answers: re-select choices via AI ──
         modified_answers = [va for va in validated_answers if va["source"] == "AI_MODIFIED"]
         if modified_answers:
-            logger.info(f"[WA-regen] Updating {len(modified_answers)} modified answers in WA Tool workload {workload_id}")
+            logger.info(
+                f"[WA-regen] Re-mapping {len(modified_answers)} modified answers "
+                f"to WA Tool choices for workload {workload_id}"
+            )
             for va in modified_answers:
                 qid = va["question_id"]
                 try:
-                    # Get current answer to preserve selected_choices
+                    # Ask AI to pick the right choices based on human text
+                    new_choices = _remap_choices_for_modified_answer(
+                        wa_agent=wa_agent,
+                        workload_id=workload_id,
+                        question_id=qid,
+                        modified_answer=va["answer_content"],
+                        question_title=va.get("question_text", qid),
+                    )
+                    if new_choices:
+                        wa_agent.wa_client.update_answer(
+                            workload_id=workload_id,
+                            lens_alias="wellarchitected",
+                            question_id=qid,
+                            selected_choices=new_choices,
+                            notes=f"[Human-Reviewed] {va['answer_content'][:2048]}",
+                        )
+                        updated_count += 1
+                        logger.info(
+                            f"[WA-regen] Updated {qid}: "
+                            f"{len(new_choices)} choices selected from modified answer"
+                        )
+                    else:
+                        # Fallback: keep existing choices, update notes only
+                        current = wa_agent.wa_client.get_answer(
+                            workload_id=workload_id,
+                            lens_alias="wellarchitected",
+                            question_id=qid,
+                        )
+                        existing = current.get("Answer", {}).get("SelectedChoices", [])
+                        if existing:
+                            wa_agent.wa_client.update_answer(
+                                workload_id=workload_id,
+                                lens_alias="wellarchitected",
+                                question_id=qid,
+                                selected_choices=existing,
+                                notes=f"[Human-Reviewed] {va['answer_content'][:2048]}",
+                            )
+                            updated_count += 1
+                except Exception as e:
+                    logger.warning(f"[WA-regen] Failed to update WA answer for {qid}: {e}")
+
+        # ── Handle REJECTED answers: flag for manual review ──
+        if rejected_question_ids:
+            logger.info(f"[WA-regen] Flagging {len(rejected_question_ids)} rejected answers in WA Tool")
+            for qid in rejected_question_ids:
+                try:
                     current = wa_agent.wa_client.get_answer(
                         workload_id=workload_id,
                         lens_alias="wellarchitected",
                         question_id=qid,
                     )
-                    current_answer = current.get("Answer", {})
-                    selected = current_answer.get("SelectedChoices", [])
-                    if not selected:
-                        # Keep existing choices; cannot update without them
-                        logger.debug(f"[WA-regen] No selected choices for {qid}, updating notes only via existing choices")
-                        selected = current_answer.get("ChoiceAnswers", [])
-                        selected = [ca.get("ChoiceId") for ca in selected if ca.get("Status") == "SELECTED"]
-
-                    if selected:
+                    existing = current.get("Answer", {}).get("SelectedChoices", [])
+                    if existing:
                         wa_agent.wa_client.update_answer(
                             workload_id=workload_id,
                             lens_alias="wellarchitected",
                             question_id=qid,
-                            selected_choices=selected,
-                            notes=f"[Human-Reviewed] {va['answer_content'][:2048]}",
+                            selected_choices=existing,
+                            notes="[REJECTED BY REVIEWER] This answer was flagged as inadequate during human review. Please review and update manually in the AWS Console.",
                         )
-                        logger.info(f"[WA-regen] Updated WA Tool answer for {qid}")
-                    else:
-                        logger.warning(f"[WA-regen] Skipping {qid}: no selected choices found")
+                        updated_count += 1
+                        logger.info(f"[WA-regen] Flagged rejected answer {qid}")
                 except Exception as e:
-                    logger.warning(f"[WA-regen] Failed to update WA answer for {qid}: {e}")
+                    logger.warning(f"[WA-regen] Failed to flag rejected answer {qid}: {e}")
 
-        # Regenerate report (create new milestone + download PDF)
-        logger.info(f"[WA-regen] Regenerating report for workload {workload_id}")
-        save_path = f"/tmp/reports/wafr_aws_report_{session_id}_reviewed.pdf"
-        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        # ── Regenerate report (create new milestone + download PDF) ──
+        if updated_count > 0:
+            logger.info(f"[WA-regen] {updated_count} WA answers updated. Regenerating report for workload {workload_id}")
+            save_path = f"/tmp/reports/wafr_aws_report_{session_id}_reviewed.pdf"
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
 
-        review_result = wa_agent.create_milestone_and_review(
-            workload_id=workload_id,
-            milestone_name=f"Post_Review_{session_id[:8]}",
-            save_report_path=save_path,
-        )
+            wa_agent.create_milestone_and_review(
+                workload_id=workload_id,
+                milestone_name=f"Post_Review_{session_id[:8]}",
+                save_report_path=save_path,
+            )
 
-        if os.path.exists(save_path):
-            # Update session_results with new report path
-            if isinstance(wa_step, dict):
-                wa_step["report_file"] = save_path
-                wa_step["report_reviewed"] = True
-            _save_pipeline_results(session_id, results)
-            # Update in-memory state
-            if session_id in session_states:
-                session_states[session_id].report.file_path = save_path
-                session_states[session_id].report.generated = True
-            logger.info(f"[WA-regen] Regenerated reviewed report at {save_path}")
+            if os.path.exists(save_path):
+                # Update session_results with new report path
+                if isinstance(wa_step, dict):
+                    wa_step["report_file"] = save_path
+                    wa_step["report_reviewed"] = True
+                _save_pipeline_results(session_id, results)
+                # Update in-memory state
+                if session_id in session_states:
+                    session_states[session_id].report.file_path = save_path
+                    session_states[session_id].report.generated = True
+                logger.info(f"[WA-regen] Regenerated reviewed report at {save_path}")
+            else:
+                logger.warning(f"[WA-regen] Report file not created at {save_path}")
         else:
-            logger.warning(f"[WA-regen] Report file not created at {save_path}")
+            logger.info(f"[WA-regen] No WA Tool answers updated, skipping report regeneration")
 
     except Exception as e:
         logger.error(f"[WA-regen] Failed to regenerate WA report for {session_id}: {e}", exc_info=True)
@@ -1489,9 +1623,23 @@ async def finalize_review_session(
             logger.info(f"Validated answers merged: {answers_merged} ({len(validated_answers)} answers)")
 
             # Kick off background WA Tool report regeneration (best-effort)
-            if modified > 0:
-                background_tasks.add_task(_regenerate_wa_report, session_id, validated_answers)
-                logger.info(f"Queued WA report regeneration for {session_id} ({modified} modified answers)")
+            # Collect rejected question IDs so WA Tool answers can be flagged
+            rejected_qids = []
+            if rejected > 0 and review_session:
+                from wafr.models.review_item import ReviewStatus
+                rejected_qids = [
+                    i.question_id for i in review_session.items
+                    if i.status == ReviewStatus.REJECTED
+                ]
+
+            if modified > 0 or rejected > 0:
+                background_tasks.add_task(
+                    _regenerate_wa_report, session_id, validated_answers, rejected_qids
+                )
+                logger.info(
+                    f"Queued WA report regeneration for {session_id} "
+                    f"({modified} modified, {rejected} rejected answers)"
+                )
 
         return {
             "status": "success",
@@ -1504,7 +1652,7 @@ async def finalize_review_session(
                 "rejected": rejected,
             },
             "review_applied": answers_merged,
-            "report_regenerating": modified > 0,
+            "report_regenerating": modified > 0 or rejected > 0,
         }
         
     except HTTPException:
