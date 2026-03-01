@@ -32,7 +32,6 @@ import {
 } from "@/components/ui/table";
 import {
   Download,
-  FileText,
   FileDown,
   CheckCircle,
   AlertCircle,
@@ -221,17 +220,6 @@ export default function ReportsPage() {
 
   const [downloading, setDownloading] = useState<string | null>(null);
 
-  const downloadPdfReport = async () => {
-    setDownloading("pdf");
-    try {
-      await backend.downloadReport(sessionId);
-    } catch (err) {
-      console.error('PDF report download failed:', err);
-    } finally {
-      setDownloading(null);
-    }
-  };
-
   const viewAwsReport = async () => {
     setDownloading("aws");
     try {
@@ -372,41 +360,7 @@ export default function ReportsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* PDF Report */}
-                <Card className="border shadow-none">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                        <FileText className="h-6 w-6 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-semibold">PDF Report</p>
-                        <p className="text-xs text-muted-foreground">
-                          Executive summary with all findings
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      onClick={downloadPdfReport}
-                      disabled={reportStatus !== "ready" || downloading !== null}
-                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-                    >
-                      {downloading === "pdf" ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Downloading...
-                        </>
-                      ) : (
-                        <>
-                          <FileText className="h-4 w-4" />
-                          Download PDF Report
-                        </>
-                      )}
-                    </Button>
-                  </CardContent>
-                </Card>
-
+              <div className="max-w-md">
                 {/* AWS Official Report */}
                 <Card className="border shadow-none">
                   <CardContent className="pt-6">
@@ -422,10 +376,9 @@ export default function ReportsPage() {
                       </div>
                     </div>
                     <Button
-                      variant="outline"
                       onClick={viewAwsReport}
                       disabled={downloading !== null}
-                      className="w-full border-primary text-primary hover:bg-primary/10"
+                      className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                     >
                       {downloading === "aws" ? (
                         <>
@@ -435,7 +388,7 @@ export default function ReportsPage() {
                       ) : (
                         <>
                           <FileDown className="h-4 w-4" />
-                          View AWS Report
+                          Download AWS Report
                         </>
                       )}
                     </Button>
