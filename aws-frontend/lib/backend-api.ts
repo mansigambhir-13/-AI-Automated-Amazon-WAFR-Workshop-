@@ -81,7 +81,7 @@ export async function deleteSession(sessionId: string): Promise<void> {
 function mapBackendSession(bs: BackendSession): Session {
   return {
     id: bs.session_id,
-    name: bs.assessment_name || `Assessment ${bs.session_id.slice(0, 8)}`,
+    name: bs.client_name || bs.assessment_name || `Assessment ${bs.session_id.slice(0, 8)}`,
     status: mapStatus(bs.status),
     created_at: bs.created_at || bs.updated_at || new Date().toISOString(),
   };

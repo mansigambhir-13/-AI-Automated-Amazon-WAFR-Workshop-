@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useTheme } from "next-themes";
-import { Sun, Moon, Settings, LogOut } from "lucide-react";
+import { Settings, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getCurrentUserInfo, isTeamUser, signOutUser } from "@/lib/auth";
@@ -21,11 +20,7 @@ function getBreadcrumbLabel(pathname: string): string | null {
 
 export default function Header() {
   const pathname = usePathname();
-  const { resolvedTheme, setTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
   const [userInfo, setUserInfo] = useState<{ username: string; groups: string[] } | null>(null);
-
-  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     getCurrentUserInfo()
@@ -106,24 +101,6 @@ export default function Header() {
             </div>
           )}
 
-          {/* Theme toggle */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-            className="text-foreground hover:bg-accent"
-            aria-label="Toggle theme"
-          >
-            {mounted ? (
-              resolvedTheme === "dark" ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )
-            ) : (
-              <span className="h-5 w-5" />
-            )}
-          </Button>
         </div>
       </div>
     </header>

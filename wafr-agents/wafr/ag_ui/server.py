@@ -824,6 +824,9 @@ async def run_wafr_assessment(
                     
                     # Store results for later retrieval via API endpoints
                     session_results[thread_id] = result
+                    # Preserve client_name on results for session listing
+                    if result and isinstance(result, dict):
+                        result["client_name"] = client_name
                     # Persist to disk for survival across restarts
                     _save_pipeline_results(thread_id, result)
                     # Persist to DynamoDB when dynamodb backend is active
@@ -1175,11 +1178,13 @@ async def list_sessions(
     for session_id, state in session_states.items():
         # Get assessment summary from session_results if available
         summary = {}
+        client_name = None
         _ensure_session_results(session_id)
         if session_id in session_results:
             result = session_results[session_id]
             steps = result.get("steps", {}) if result else {}
-            
+            client_name = result.get("client_name") if result else None
+
             # Extract summary data
             if "scoring" in steps:
                 scoring_result = steps["scoring"]
@@ -1187,16 +1192,20 @@ async def list_sessions(
                     scores = scoring_result.get("scores", {})
                     if isinstance(scores, dict):
                         summary["overall_score"] = scores.get("overall_score", 0.0)
-            
+
             if "wa_workload" in steps:
                 wa_step = steps["wa_workload"]
                 if isinstance(wa_step, dict):
                     summary["workload_id"] = wa_step.get("workload_id")
                     summary["report_file"] = wa_step.get("report_file")
-        
+
+        # Use client_name as the display name (company name)
+        assessment_name = client_name or summary.get("assessment_name") or f"Assessment {session_id[:8]}"
+
         sessions_dict[session_id] = {
             "session_id": session_id,
-            "assessment_name": summary.get("assessment_name", f"Assessment {session_id[:8]}"),
+            "assessment_name": assessment_name,
+            "client_name": client_name,
             "status": state.session.status.upper() if hasattr(state.session.status, 'upper') else str(state.session.status).upper(),
             "current_step": state.pipeline.current_step,
             "progress": state.pipeline.progress_percentage,
@@ -1216,14 +1225,17 @@ async def list_sessions(
                     # Get assessment summary from stored session
                     summary = stored_session.get("assessment_summary", {})
                     
+                    stored_client = summary.get("client_name")
+                    stored_name = stored_client or summary.get("assessment_name") or f"Assessment {session_id[:8]}"
+
                     session_data = {
                         "session_id": session_id,
-                        "assessment_name": summary.get("assessment_name", f"Assessment {session_id[:8]}"),
+                        "assessment_name": stored_name,
+                        "client_name": stored_client,
                         "status": stored_session.get("status", "unknown").upper(),
                         "current_step": "",
                         "progress": 100.0 if stored_session.get("status") == "COMPLETED" else 0.0,
                         "overall_score": summary.get("overall_score", 0.0),
-                        "client_name": summary.get("client_name"),
                         "workload_id": summary.get("workload_id"),
                         "report_file": summary.get("report_file"),
                         "created_at": stored_session.get("created_at") or summary.get("created_at"),
