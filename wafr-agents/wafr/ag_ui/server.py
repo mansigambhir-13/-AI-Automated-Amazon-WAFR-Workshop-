@@ -1052,28 +1052,68 @@ async def submit_review_decision(
         # Get review orchestrator with storage
         review_orch = get_review_orchestrator()
 
-        # Create decision data
+        # Map string decision to enum
+        decision_map = {
+            "APPROVE": ReviewDecision.APPROVE,
+            "MODIFY": ReviewDecision.MODIFY,
+            "REJECT": ReviewDecision.REJECT,
+        }
+        decision_enum = decision_map.get(body.decision.upper())
+        if not decision_enum:
+            raise HTTPException(status_code=400, detail=f"Invalid decision: {body.decision}")
+
+        # Persist decision via review orchestrator (updates item + writes to DynamoDB)
+        updated_item = review_orch.submit_review(
+            session_id=session_id,
+            review_id=body.review_id,
+            decision=decision_enum,
+            reviewer_id=body.reviewer_id,
+            modified_answer=body.modified_answer,
+            feedback=body.feedback,
+        )
+
+        # Update in-memory state if available
+        if session_id in session_states:
+            state = session_states[session_id]
+            review_session = review_orch.get_session(session_id)
+            if review_session:
+                pending = sum(1 for i in review_session.items if i.status.value == "PENDING")
+                approved = sum(1 for i in review_session.items if i.status.value == "APPROVED")
+                modified = sum(1 for i in review_session.items if i.status.value == "MODIFIED")
+                rejected = sum(1 for i in review_session.items if i.status.value == "REJECTED")
+                state.review.pending_count = pending
+                state.review.approved_count = approved
+                state.review.modified_count = modified
+                state.review.rejected_count = rejected
+                state.review.total_reviewed = approved + modified + rejected
+
+        # Create decision data for SSE event
         decision_data = ReviewDecisionData(
             review_id=body.review_id,
-            question_id="",  # Would be populated from review item
+            question_id=updated_item.question_id,
             decision=body.decision,
             reviewer_id=body.reviewer_id,
             modified_answer=body.modified_answer,
             feedback=body.feedback,
         )
-        
+
         # Emit event if session has emitter
         if session_id in active_sessions:
             emitter = active_sessions[session_id]
             await emitter.review_decision(decision_data)
-        
+
         return {
             "status": "success",
             "review_id": body.review_id,
             "decision": body.decision,
+            "new_status": updated_item.status.value,
             "session_id": session_id,
         }
-        
+
+    except HTTPException:
+        raise
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         logger.error(f"Review decision error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -1106,9 +1146,43 @@ async def batch_approve(
     )
 
     try:
-        approved_count = len(body.review_ids)
-        remaining_count = 0  # Would be calculated from review session
-        
+        from wafr.models.review_item import ReviewDecision
+
+        review_orch = get_review_orchestrator()
+        approved_count = 0
+
+        # Persist each approval via review orchestrator
+        for review_id in body.review_ids:
+            try:
+                review_orch.submit_review(
+                    session_id=session_id,
+                    review_id=review_id,
+                    decision=ReviewDecision.APPROVE,
+                    reviewer_id=body.reviewer_id,
+                )
+                approved_count += 1
+            except ValueError as e:
+                logger.warning(f"Batch approve skip {review_id}: {e}")
+
+        # Calculate remaining from actual session state
+        review_session = review_orch.get_session(session_id)
+        remaining_count = 0
+        if review_session:
+            remaining_count = sum(1 for i in review_session.items if i.status.value == "PENDING")
+
+        # Update in-memory state
+        if session_id in session_states and review_session:
+            state = session_states[session_id]
+            pending = sum(1 for i in review_session.items if i.status.value == "PENDING")
+            approved_total = sum(1 for i in review_session.items if i.status.value == "APPROVED")
+            modified = sum(1 for i in review_session.items if i.status.value == "MODIFIED")
+            rejected = sum(1 for i in review_session.items if i.status.value == "REJECTED")
+            state.review.pending_count = pending
+            state.review.approved_count = approved_total
+            state.review.modified_count = modified
+            state.review.rejected_count = rejected
+            state.review.total_reviewed = approved_total + modified + rejected
+
         # Emit event if session has emitter
         if session_id in active_sessions:
             emitter = active_sessions[session_id]
@@ -1117,14 +1191,16 @@ async def batch_approve(
                 approved_count=approved_count,
                 remaining_count=remaining_count,
             )
-        
+
         return {
             "status": "success",
             "approved_count": approved_count,
             "remaining_count": remaining_count,
             "session_id": session_id,
         }
-        
+
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Batch approve error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -1157,19 +1233,28 @@ async def finalize_review_session(
     )
 
     try:
-        # Validate session exists
-        if session_id not in session_states:
+        # Validate session exists in memory or storage
+        review_orch = get_review_orchestrator()
+        review_session = review_orch.get_session(session_id)
+
+        if session_id not in session_states and not review_session:
             raise HTTPException(status_code=404, detail="Session not found")
-        
-        state = session_states[session_id]
-        
-        # Check if can finalize (simplified validation)
-        if state.review.pending_count > 0:
+
+        # Get pending count from review orchestrator (source of truth)
+        pending_count = 0
+        if review_session:
+            pending_count = sum(1 for i in review_session.items if i.status.value == "PENDING")
+
+        state = session_states.get(session_id)
+
+        # Check if can finalize
+        if pending_count > 0:
+            authenticity = state.scores.authenticity_score if state else 0.0
             validation_status = ValidationStatus(
                 can_finalize=False,
-                issues=[f"{state.review.pending_count} items still pending review"],
-                authenticity_score=state.scores.authenticity_score,
-                pending_count=state.review.pending_count,
+                issues=[f"{pending_count} items still pending review"],
+                authenticity_score=authenticity,
+                pending_count=pending_count,
             )
             
             if session_id in active_sessions:
@@ -1181,12 +1266,29 @@ async def finalize_review_session(
                 "issues": validation_status.issues,
             }
         
-        # Finalize
-        authenticity_score = state.scores.authenticity_score
-        total_items = state.review.total_items
-        approved = state.review.approved_count
-        modified = state.review.modified_count
-        
+        # Get counts from review orchestrator (source of truth)
+        total_items = len(review_session.items) if review_session else 0
+        approved = sum(1 for i in review_session.items if i.status.value == "APPROVED") if review_session else 0
+        modified = sum(1 for i in review_session.items if i.status.value == "MODIFIED") if review_session else 0
+        rejected = sum(1 for i in review_session.items if i.status.value == "REJECTED") if review_session else 0
+        authenticity_score = state.scores.authenticity_score if state else 0.0
+
+        # Save validation record to DynamoDB
+        if review_orch.storage:
+            try:
+                validation_record = {
+                    "session_id": session_id,
+                    "authenticity_score": authenticity_score,
+                    "total_items": total_items,
+                    "approved": approved,
+                    "modified": modified,
+                    "rejected": rejected,
+                }
+                review_orch.storage.save_validation_record(validation_record)
+                logger.info(f"Validation record saved for {session_id}")
+            except Exception as e:
+                logger.error(f"Failed to save validation record: {e}", exc_info=True)
+
         # Emit finalization event
         if session_id in active_sessions:
             await active_sessions[session_id].session_finalized(
@@ -1196,10 +1298,16 @@ async def finalize_review_session(
                 approved=approved,
                 modified=modified,
             )
-        
-        # Update state
-        state.session.status = SessionStatus.FINALIZED.value
-        
+
+        # Update in-memory state
+        if state:
+            state.session.status = SessionStatus.FINALIZED.value
+            state.review.pending_count = 0
+            state.review.approved_count = approved
+            state.review.modified_count = modified
+            state.review.rejected_count = rejected
+            state.review.total_items = total_items
+
         return {
             "status": "success",
             "session_id": session_id,
@@ -1208,6 +1316,7 @@ async def finalize_review_session(
                 "total_items": total_items,
                 "approved": approved,
                 "modified": modified,
+                "rejected": rejected,
             },
         }
         
