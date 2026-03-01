@@ -613,88 +613,89 @@ export default function ReportsPage() {
           )}
 
           {/* ============================================================= */}
-          {/* Review Summary Stats                                           */}
+          {/* Assessment Summary Stats (all data from actual WAFR results)    */}
           {/* ============================================================= */}
-          {summary && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Review Summary</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                  {/* Total Items */}
-                  <Card className="border shadow-none text-center">
-                    <CardContent className="pt-6 pb-4">
-                      <p className="text-3xl font-bold text-secondary">
-                        {summary.total_items}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Total Items
-                      </p>
-                    </CardContent>
-                  </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Assessment Summary</CardTitle>
+              <CardDescription>
+                Metrics from the Well-Architected Framework review
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                {/* Total Gaps — from actual gaps endpoint */}
+                <Card className="border shadow-none text-center">
+                  <CardContent className="pt-6 pb-4">
+                    <p className="text-3xl font-bold text-secondary">
+                      {gaps.length}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Total Gaps
+                    </p>
+                  </CardContent>
+                </Card>
 
-                  {/* Approved */}
-                  <Card className="border border-green-300 dark:border-green-800 shadow-none text-center">
-                    <CardContent className="pt-6 pb-4">
-                      <p className="text-3xl font-bold text-green-600 dark:text-green-400">
-                        {summary.approved_items}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Approved
-                      </p>
-                    </CardContent>
-                  </Card>
+                {/* High Risk — from actual gaps data */}
+                <Card className="border border-red-300 dark:border-red-800 shadow-none text-center">
+                  <CardContent className="pt-6 pb-4">
+                    <p className="text-3xl font-bold text-red-600 dark:text-red-400">
+                      {gaps.filter((g) => g.risk_level === "High").length}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      High Risk
+                    </p>
+                  </CardContent>
+                </Card>
 
-                  {/* High Risk */}
-                  <Card className="border border-red-300 dark:border-red-800 shadow-none text-center">
-                    <CardContent className="pt-6 pb-4">
-                      <p className="text-3xl font-bold text-red-600 dark:text-red-400">
-                        {summary.high_risk_gaps}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        High Risk
-                      </p>
-                    </CardContent>
-                  </Card>
+                {/* Medium Risk — from actual gaps data */}
+                <Card className="border border-amber-300 dark:border-amber-800 shadow-none text-center">
+                  <CardContent className="pt-6 pb-4">
+                    <p className="text-3xl font-bold text-amber-600 dark:text-amber-400">
+                      {gaps.filter((g) => g.risk_level === "Medium").length}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Medium Risk
+                    </p>
+                  </CardContent>
+                </Card>
 
-                  {/* Medium Risk */}
-                  <Card className="border border-amber-300 dark:border-amber-800 shadow-none text-center">
-                    <CardContent className="pt-6 pb-4">
-                      <p className="text-3xl font-bold text-amber-600 dark:text-amber-400">
-                        {summary.medium_risk_gaps}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Medium Risk
-                      </p>
-                    </CardContent>
-                  </Card>
+                {/* Insights — from actual insights endpoint */}
+                <Card className="border border-blue-300 dark:border-blue-800 shadow-none text-center">
+                  <CardContent className="pt-6 pb-4">
+                    <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                      {insights.length}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Insights
+                    </p>
+                  </CardContent>
+                </Card>
 
-                  {/* Auto-Fix */}
-                  <Card className="border shadow-none text-center">
-                    <CardContent className="pt-6 pb-4">
-                      <p className="text-3xl font-bold">
-                        {summary.auto_remediable_count}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Auto-Fix
-                      </p>
-                    </CardContent>
-                  </Card>
+                {/* Pillars Assessed — from actual pillars endpoint */}
+                <Card className="border border-green-300 dark:border-green-800 shadow-none text-center">
+                  <CardContent className="pt-6 pb-4">
+                    <p className="text-3xl font-bold text-green-600 dark:text-green-400">
+                      {pillars.length}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Pillars Assessed
+                    </p>
+                  </CardContent>
+                </Card>
 
-                  {/* Avg Score */}
-                  <Card className="border shadow-none text-center">
-                    <CardContent className="pt-6 pb-4">
-                      <p className="text-3xl font-bold">{averageScore}</p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Avg Score
-                      </p>
-                    </CardContent>
-                  </Card>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                {/* Avg Score — computed from actual pillar scores */}
+                <Card className="border shadow-none text-center">
+                  <CardContent className="pt-6 pb-4">
+                    <p className="text-3xl font-bold">{averageScore}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Avg Score
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* ============================================================= */}
           {/* Detailed Insights (Accordion)                                  */}
