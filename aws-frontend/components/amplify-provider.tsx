@@ -47,8 +47,38 @@ export default function AmplifyProvider({
 }) {
   return (
     <Authenticator
-      hideSignUp
       initialState="signIn"
+      signUpAttributes={['email']}
+      formFields={{
+        signUp: {
+          username: {
+            label: 'Username',
+            placeholder: 'Choose a username',
+            order: 1,
+          },
+          email: {
+            label: 'Email',
+            placeholder: 'Enter your email',
+            order: 2,
+          },
+          password: {
+            label: 'Password',
+            placeholder: 'Create a password',
+            order: 3,
+          },
+          confirm_password: {
+            label: 'Confirm Password',
+            placeholder: 'Confirm your password',
+            order: 4,
+          },
+        },
+        signIn: {
+          username: {
+            label: 'Username',
+            placeholder: 'Enter your username',
+          },
+        },
+      }}
       components={{ Header: AuthHeader }}
     >
       {({ signOut: _signOut, user: _user }) => <>{children}</>}
