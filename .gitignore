@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Node.js
+node_modules/
+.next/
+out/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment / Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+credentials.json
+
+# Logs
+*.log
+migration_*.log
+
+# AWS
+.aws/
+
+# Build artifacts
+*.tsbuildinfo
+next-env.d.ts
+
+# Planning (internal)
+.planning/
+.claude/
+
+# Misc
+backend-update.json
+extended-policy.json
+frontend-update.json
+review_sessions/

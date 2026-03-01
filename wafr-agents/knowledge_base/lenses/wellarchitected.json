@@ -1,0 +1,12 @@
+{
+  "lens_alias": "wellarchitected",
+  "lens_arn": "arn:aws:wellarchitected::aws:lens/wellarchitected",
+  "lens_name": "AWS Well-Architected Framework",
+  "lens_version": "2025-02-25",
+  "description": "",
+  "owner": "AWS",
+  "question_count": 0,
+  "fetched_at": "2026-01-27T18:15:08.628908",
+  "pillars": {},
+  "questions": {}
+}

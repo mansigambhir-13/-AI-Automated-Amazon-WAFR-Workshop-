@@ -1,0 +1,83 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environments
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# AWS & Secrets
+.env
+.env.local
+*.pem
+*.key
+credentials
+config
+.aws/
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Project specific
+transcript.txt
+*.pdf
+wafr_reports/
+output/
+temp/
+tmp/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Build artifacts
+.bedrock_agentcore/
+dependencies.zip
+dependencies.hash
+*.zip
+
+# Local venv
+venv_local/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride

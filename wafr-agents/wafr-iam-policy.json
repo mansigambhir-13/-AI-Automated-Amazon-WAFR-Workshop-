@@ -1,0 +1,116 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "WellArchitectedToolFullAccess",
+      "Effect": "Allow",
+      "Action": [
+        "wellarchitected:CreateWorkload",
+        "wellarchitected:GetWorkload",
+        "wellarchitected:UpdateWorkload",
+        "wellarchitected:DeleteWorkload",
+        "wellarchitected:ListWorkloads",
+        "wellarchitected:GetAnswer",
+        "wellarchitected:UpdateAnswer",
+        "wellarchitected:ListAnswers",
+        "wellarchitected:CreateMilestone",
+        "wellarchitected:GetMilestone",
+        "wellarchitected:ListMilestones",
+        "wellarchitected:GetLensReview",
+        "wellarchitected:GetLensReviewReport",
+        "wellarchitected:ListLensReviews",
+        "wellarchitected:ListLensReviewImprovements",
+        "wellarchitected:GetLens",
+        "wellarchitected:ListLenses",
+        "wellarchitected:GetConsolidatedReport",
+        "wellarchitected:TagResource",
+        "wellarchitected:UntagResource",
+        "wellarchitected:ListTagsForResource"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "BedrockModelInvocation",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:InvokeModel",
+        "bedrock:InvokeModelWithResponseStream"
+      ],
+      "Resource": [
+        "arn:aws:bedrock:*::foundation-model/anthropic.claude-*",
+        "arn:aws:bedrock:us-east-1::foundation-model/us.anthropic.claude-*",
+        "arn:aws:bedrock:us-west-2::foundation-model/us.anthropic.claude-*",
+        "arn:aws:bedrock:*::foundation-model/us.anthropic.claude-*"
+      ]
+    },
+    {
+      "Sid": "BedrockAgentCoreAccess",
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:InvokeAgent",
+        "bedrock:InvokeAgentWithResponseStream"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "S3ReportStorage",
+      "Effect": "Allow",
+      "Action": [
+        "s3:PutObject",
+        "s3:GetObject",
+        "s3:DeleteObject",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::wafr-reports-*",
+        "arn:aws:s3:::wafr-reports-*/*",
+        "arn:aws:s3:::wafr-agent-production-artifacts-*",
+        "arn:aws:s3:::wafr-agent-production-artifacts-*/*"
+      ]
+    },
+    {
+      "Sid": "STSIdentityCheck",
+      "Effect": "Allow",
+      "Action": [
+        "sts:GetCallerIdentity"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "TranscribeAudioProcessing",
+      "Effect": "Allow",
+      "Action": [
+        "transcribe:StartTranscriptionJob",
+        "transcribe:GetTranscriptionJob",
+        "transcribe:DeleteTranscriptionJob"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "TextractOCR",
+      "Effect": "Allow",
+      "Action": [
+        "textract:DetectDocumentText",
+        "textract:AnalyzeDocument"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "CloudWatchLogsAccess",
+      "Effect": "Allow",
+      "Action": [
+        "logs:FilterLogEvents",
+        "logs:GetLogEvents",
+        "logs:DescribeLogGroups",
+        "logs:DescribeLogStreams",
+        "logs:StartQuery",
+        "logs:StopQuery",
+        "logs:GetQueryResults"
+      ],
+      "Resource": [
+        "arn:aws:logs:*:842387632939:log-group:/aws/bedrock-agentcore/*",
+        "arn:aws:logs:*:842387632939:log-group:/aws/lambda/*"
+      ]
+    }
+  ]
+}
